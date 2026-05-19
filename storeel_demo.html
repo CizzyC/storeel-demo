@@ -231,10 +231,10 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
 .spark-banner{position:relative;z-index:10;text-align:center;font-size:11px;font-weight:700;color:#4ADE80;letter-spacing:0.5px;padding:5px 0;background:rgba(0,0,0,0.2);flex-shrink:0}
 .spark-banner.hidden{display:none}
 /* Chat scroll */
-#panel-chat{position:relative;z-index:10;flex:1;overflow-y:auto;padding:8px 14px 4px}
+#panel-chat{position:relative;z-index:10;flex:1;min-height:0;overflow-y:auto;padding:8px 14px 4px}
 #panel-chat::-webkit-scrollbar{display:none}
 /* Char bubble */
-.char-msg-group{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;max-width:82%}
+.char-msg-group{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;max-width:82%;align-self:flex-start}
 .char-name-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
 .char-bubble-av{width:22px;height:22px;border-radius:50%;background:url('source/IMG_8906.PNG') center top/cover;border:1px solid rgba(255,255,255,0.2);flex-shrink:0}
 .char-name-pill{font-size:11px;font-weight:700;color:#C4B5FD;background:rgba(124,58,237,0.25);border:1px solid rgba(167,139,250,0.4);border-radius:20px;padding:2px 9px}
