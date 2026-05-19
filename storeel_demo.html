@@ -1,1394 +1,1453 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>StoReel – Interactive Demo v2</title>
-  <style>
-    /* ════════════════════════════════════════
-       RESET & BASE
-    ════════════════════════════════════════ */
-    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-    body {
-      background:#0D0019; display:flex; flex-direction:column; align-items:center;
-      min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      padding-bottom:96px;
-    }
-    .demo-label {
-      color:#7C3AED; font-size:11px; font-weight:700; letter-spacing:1.5px;
-      text-transform:uppercase; padding:14px 0 8px;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>StoReel Demo v4</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#111;display:flex;flex-direction:column;align-items:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;padding-bottom:104px}
+.demo-label{color:#7C3AED;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:12px 0 6px}
+.phone{width:390px;height:820px;border-radius:50px;overflow:hidden;position:relative;box-shadow:0 0 0 1px #333,0 30px 80px rgba(0,0,0,0.8)}
+.screen{display:none;width:100%;height:100%;flex-direction:column;background:#000;color:#fff;position:absolute;inset:0}
+.screen.active{display:flex}
 
-    /* ════════════════════════════════════════
-       PHONE FRAME
-    ════════════════════════════════════════ */
-    .phone {
-      width:390px; height:820px; background:#000; border-radius:48px;
-      overflow:hidden; position:relative;
-      box-shadow:0 0 80px rgba(124,58,237,0.35), 0 0 0 1px #222;
-    }
+/* STATUS BAR */
+.sb{height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 8px;font-size:13px;font-weight:600;flex-shrink:0;position:relative;z-index:10}
 
-    /* ════════════════════════════════════════
-       SCREENS
-    ════════════════════════════════════════ */
-    .screen {
-      display:none; width:100%; height:100%; flex-direction:column;
-      background:#000; color:#fff; position:absolute; top:0; left:0;
-    }
-    .screen.active { display:flex; }
+/* ═══ SPLASH ═══ */
+#s-splash{background:#000;align-items:center;justify-content:center}
+.splash-glow-tl{position:absolute;top:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.12) 0%,transparent 70%);pointer-events:none}
+.splash-glow-tr{position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(74,222,128,0.15) 0%,transparent 70%);pointer-events:none}
+.splash-logo{font-size:44px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#C8FF00 0%,#00F0C8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;position:relative;z-index:2}
+.splash-sub{font-size:15px;color:rgba(255,255,255,0.85);letter-spacing:1px;margin-top:6px;font-weight:500;position:relative;z-index:2}
+.splash-home-indicator{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:130px;height:5px;border-radius:3px;background:rgba(255,255,255,0.3)}
 
-    /* ════════════════════════════════════════
-       STATUS BAR
-    ════════════════════════════════════════ */
-    .statusbar {
-      height:50px; display:flex; align-items:flex-end; justify-content:space-between;
-      padding:0 22px 8px; font-size:13px; font-weight:600; flex-shrink:0;
-    }
+/* ═══ HOME ═══ */
+#s-home{background:#000}
+.home-search-row{display:flex;align-items:center;gap:8px;padding:10px 14px;flex-shrink:0}
+.home-searchbar{flex:1;display:flex;align-items:center;background:#1C1C1E;border-radius:12px;padding:9px 12px;gap:8px}
+.home-searchbar input{flex:1;background:transparent;border:none;color:#fff;font-size:13px;outline:none}
+.home-searchbar input::placeholder{color:#555}
+.home-search-icons{display:flex;gap:8px;align-items:center}
+.home-icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.cat-scroll{display:flex;gap:0;padding:0 14px 10px;overflow-x:auto;flex-shrink:0}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-tab{padding:6px 14px;font-size:14px;font-weight:600;color:#888;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.cat-tab.active{color:#fff;border-bottom-color:#fff}
+.home-scroll{flex:1;overflow-y:auto}
+.home-scroll::-webkit-scrollbar{display:none}
+/* Featured carousel */
+.home-featured-area{padding:0 14px;margin-bottom:20px}
+.featured-wrap{position:relative;border-radius:16px;overflow:hidden;height:210px;cursor:pointer}
+.featured-img{width:100%;height:100%;object-fit:cover;background:linear-gradient(135deg,#1a0a2e,#2a1545,#0a1535)}
+.featured-photo-mock{width:100%;height:100%;background:linear-gradient(160deg,#1a1040 0%,#2d1060 40%,#1a0a30 100%);display:flex;align-items:center;justify-content:center;font-size:80px;position:relative}
+.featured-photo-mock::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(0,0,0,0.85))}
+.featured-overlay{position:absolute;bottom:0;left:0;right:0;padding:12px 14px;z-index:2}
+.featured-storeel-badge{font-size:10px;color:#C8FF00;font-weight:700;letter-spacing:1px;margin-bottom:4px;display:flex;align-items:center;gap:4px}
+.featured-title{font-size:17px;font-weight:800;color:#fff;line-height:1.3;font-style:italic}
+.featured-actions{position:absolute;bottom:12px;right:14px;display:flex;gap:8px;z-index:3}
+.feat-play-btn{background:rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:7px 14px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+.feat-add-btn{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer}
+/* Top Series */
+.section-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px 10px}
+.section-title{font-size:17px;font-weight:800}
+.section-more{font-size:13px;color:#888}
+.top-series-row{display:flex;gap:12px;padding:0 14px 16px;overflow-x:auto}
+.top-series-row::-webkit-scrollbar{display:none}
+.top-card{width:110px;flex-shrink:0;cursor:pointer}
+.top-card-img{width:110px;height:148px;border-radius:10px;overflow:hidden;position:relative;background:linear-gradient(135deg,#1a0a2e,#2a1010)}
+.top-card-img-inner{width:100%;height:100%;object-fit:cover;font-size:60px;display:flex;align-items:center;justify-content:center}
+.top-rank{position:absolute;bottom:-2px;left:-2px;font-size:42px;font-weight:900;color:rgba(255,255,255,0.9);text-shadow:0 2px 8px rgba(0,0,0,0.8);line-height:1}
+.top-card-title{font-size:12px;font-weight:600;margin-top:6px;color:#ddd;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Currently watching strip */
+.watching-strip{margin:0 14px 14px;background:#111;border-radius:12px;padding:12px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.watching-thumb{width:48px;height:64px;border-radius:8px;flex-shrink:0;overflow:hidden;background:linear-gradient(135deg,#1a0a2e,#2a1545);display:flex;align-items:center;justify-content:center;font-size:28px}
+.watching-info{flex:1;min-width:0}
+.watching-title{font-size:14px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.watching-ep{font-size:11px;color:#666}
+.watching-play{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+/* Home 4-item nav */
+.home-nav{display:flex;padding:10px 0 28px;flex-shrink:0;background:#000;border-top:1px solid #1A1A1A}
+.home-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.home-nav-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:22px}
+.home-nav-label{font-size:10px;color:#555}
+.home-nav-item.active .home-nav-label{color:#4ADE80}
+.home-nav-item.active .home-nav-icon{filter:drop-shadow(0 0 6px rgba(74,222,128,0.7))}
 
-    /* ════════════════════════════════════════
-       BOTTOM NAV (shared)
-    ════════════════════════════════════════ */
-    .bottom-nav {
-      display:flex; border-top:1px solid #1A1A1A;
-      padding:6px 0 22px; flex-shrink:0; position:relative; z-index:20;
-    }
-    .nav-item {
-      flex:1; display:flex; flex-direction:column;
-      align-items:center; gap:3px; cursor:pointer; padding:4px 0; position:relative;
-    }
-    .nav-icon {
-      width:40px; height:32px; display:flex; align-items:center; justify-content:center;
-      font-size:20px; border-radius:20px; position:relative;
-    }
-    .nav-label { font-size:10px; color:#555; }
-    .nav-item.active .nav-label { color:#fff; }
-    .nav-item.active .nav-icon { background:rgba(124,58,237,0.25); }
-    /* Red dot */
-    .nav-dot {
-      position:absolute; top:-1px; right:-1px; width:8px; height:8px;
-      border-radius:50%; background:#7C3AED; display:none;
-    }
-    .nav-dot.on { display:block; }
+/* ═══ INTERACTIVE SECTION BASE ═══ */
+.inter-header{display:flex;align-items:center;padding:0 16px 10px;flex-shrink:0;position:relative}
+.inter-back{font-size:26px;color:#fff;cursor:pointer;padding:2px 8px 2px 0;line-height:1}
+.inter-title{position:absolute;left:50%;transform:translateX(-50%);font-size:16px;font-weight:800;white-space:nowrap;font-style:italic}
+/* 3-item bottom nav */
+.inter-nav{display:flex;padding:8px 0 28px;flex-shrink:0;background:#000;border-top:1px solid #111}
+.inter-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;position:relative}
+.inter-nav-icon{width:44px;height:32px;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:16px;position:relative}
+.inter-nav-item.active .inter-nav-icon{background:rgba(109,40,217,0.85);color:#fff}
+.inter-nav-label{font-size:10px;color:#555}
+.inter-nav-item.active .inter-nav-label{color:#fff}
+.inter-nav-item:not(.active) .inter-nav-icon{color:#555}
+.inter-nav-dot{position:absolute;top:0;right:2px;width:8px;height:8px;border-radius:50%;background:#7C3AED;display:none}
+.inter-nav-dot.on{display:block}
 
-    .scroll { flex:1; overflow-y:auto; overflow-x:hidden; }
-    .scroll::-webkit-scrollbar { display:none; }
+/* ═══ FEED ═══ */
+#s-feed{background:#000}
+.feed-char-row{display:flex;align-items:center;padding:10px 16px;gap:10px;flex-shrink:0}
+.feed-char-av{width:44px;height:44px;border-radius:50%;overflow:hidden;flex-shrink:0;background:linear-gradient(135deg,#1e3a5f,#0f1f35)}
+.feed-char-av img,.feed-char-av-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.feed-char-av-mock{width:100%;height:100%;background:linear-gradient(135deg,#1e3a5f,#2d4a6e);display:flex;align-items:center;justify-content:center;font-size:20px}
+.feed-char-info{flex:1}
+.feed-char-name{font-size:15px;font-weight:700}
+.feed-char-meta{font-size:12px;color:#666;margin-top:1px}
+.feed-chat-btn{background:#7C3AED;color:#fff;border:none;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:700;cursor:pointer}
+.feed-post-img{width:100%;flex:1;max-height:360px;overflow:hidden;position:relative}
+.feed-post-mock{width:100%;height:100%;min-height:360px;background:linear-gradient(180deg,#010510 0%,#020d20 20%,#061530 45%,#0a1e35 65%,#142a1a 85%,#1e2a10 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;position:relative;overflow:hidden}
+.feed-moon{width:100px;height:100px;border-radius:50%;background:radial-gradient(circle at 38% 38%,#fffef0,#f8f0d0 25%,#e8d8a8 55%,#c8b880 80%,#a09060 100%);box-shadow:0 0 50px rgba(255,248,200,0.35),0 0 100px rgba(255,248,200,0.15),0 0 200px rgba(255,248,200,0.05);position:relative;z-index:3;margin-bottom:0}
+.feed-moon-glow{position:absolute;top:60px;left:50%;transform:translateX(-50%);width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(255,248,200,0.12) 0%,transparent 70%);z-index:2}
+.feed-sea{position:absolute;bottom:0;left:0;right:0;height:48%;z-index:2}
+.feed-sea-inner{width:100%;height:100%;background:linear-gradient(180deg,#0a1e35 0%,#0d2840 30%,#152810 70%,#1e3015 100%);position:relative;overflow:hidden}
+.feed-sea-reflect{position:absolute;top:0;left:50%;transform:translateX(-50%);width:8px;background:linear-gradient(180deg,rgba(255,248,200,0.4),rgba(255,248,200,0.05));height:100%;border-radius:4px;box-shadow:0 0 20px rgba(255,248,200,0.2)}
+.feed-sea-sand{position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(180deg,#3a2c14,#5a3e20);}
+.feed-caption-area{padding:14px 16px}
+.feed-caption{font-size:14px;color:#fff;line-height:1.55;margin-bottom:4px}
+.feed-date{font-size:12px;color:#555;margin-bottom:12px}
+.feed-actions{display:flex;align-items:center;justify-content:space-between}
+.feed-likes{display:flex;align-items:center;gap:6px;font-size:14px;color:#888}
+.feed-bookmark{font-size:20px;color:#888;cursor:pointer}
+.scroll{flex:1;overflow-y:auto}
+.scroll::-webkit-scrollbar{display:none}
 
-    /* ════════════════════════════════════════
-       SCREEN — EPISODE PLAYER
-    ════════════════════════════════════════ */
-    .player-bg {
-      flex:1; background:linear-gradient(160deg,#0a0520,#1a0a10);
-      position:relative; display:flex; flex-direction:column;
-    }
-    .drama-title-bar {
-      position:absolute; top:0; left:0; right:0;
-      padding:12px 18px 10px; background:linear-gradient(#000c,transparent);
-      display:flex; align-items:center; gap:10px; z-index:5;
-    }
-    .back-circle {
-      width:32px; height:32px; border-radius:50%;
-      background:rgba(255,255,255,0.15); display:flex; align-items:center;
-      justify-content:center; font-size:18px; cursor:pointer;
-    }
-    .drama-info { flex:1; }
-    .drama-name { font-size:14px; font-weight:700; }
-    .ep-info { font-size:11px; color:#aaa; margin-top:1px; }
+/* ═══ VERSE ═══ */
+#s-verse{background:#000}
+.verse-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 12px;flex-shrink:0}
+.verse-logo{font-size:22px;font-weight:900;letter-spacing:1px;display:flex;align-items:center;gap:6px}
+.verse-logo-text{background:linear-gradient(90deg,#C8FF00 0%,#00F0C8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.verse-ai-badge{font-size:13px;font-weight:700;color:#aaa;background:#1a1a1a;border-radius:6px;padding:2px 7px;-webkit-text-fill-color:#aaa}
+.verse-qr-btn{width:34px;height:34px;border-radius:9px;background:#1a1a1a;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.verse-scroll{flex:1;overflow-y:auto}
+.verse-scroll::-webkit-scrollbar{display:none}
+.verse-featured-row{display:flex;gap:10px;padding:0 16px 4px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.verse-featured-row::-webkit-scrollbar{display:none}
+.verse-feat-card{flex-shrink:0;width:260px;height:330px;border-radius:18px;overflow:hidden;position:relative;scroll-snap-align:center;cursor:pointer;background:linear-gradient(160deg,#1a0a0e,#2a0d14,#0d0a1a)}
+.verse-feat-card.main{width:280px;box-shadow:0 0 0 1.5px rgba(255,255,255,0.12),0 8px 32px rgba(0,0,0,0.6)}
+.verse-feat-side{opacity:0.55;pointer-events:none}
+.verse-feat-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.15),transparent 35%,rgba(0,0,0,0.25) 60%,rgba(0,0,0,0.85))}
+.verse-feat-top{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:6px;z-index:3}
+.verse-fire-count{display:flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,0.55);border-radius:10px;padding:3px 8px}
+.verse-orig-pill{font-size:10px;font-weight:700;color:#fff;background:rgba(255,255,255,0.15);border-radius:10px;padding:3px 8px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,0.15)}
+.verse-feat-title-wrap{position:absolute;bottom:46px;left:0;right:0;text-align:center;z-index:3;padding:0 12px}
+.verse-feat-title{font-family:Georgia,serif;font-size:26px;font-style:italic;font-weight:800;color:#C8FF00;text-shadow:0 0 24px rgba(200,255,0,0.45),0 2px 8px rgba(0,0,0,0.9);line-height:1.1}
+.verse-feat-title-sub{font-family:Georgia,serif;font-size:18px;font-style:italic;color:rgba(200,255,0,0.7);line-height:1.1}
+.verse-play-btn{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.65);border:1.5px solid rgba(255,255,255,0.55);border-radius:20px;color:#fff;font-size:13px;font-weight:700;padding:8px 20px;cursor:pointer;z-index:4;backdrop-filter:blur(6px);white-space:nowrap}
+.verse-feat-name{position:absolute;bottom:14px;left:0;right:0;font-size:11px;color:rgba(255,255,255,0.65);z-index:3;text-align:center;padding:0 12px}
+.verse-section-hdr{display:flex;align-items:center;padding:16px 16px 10px}
+.verse-hdr-dot{width:9px;height:9px;border-radius:50%;background:#4ADE80;margin-right:8px;box-shadow:0 0 8px rgba(74,222,128,0.7);flex-shrink:0}
+.verse-hdr-text{font-size:16px;font-weight:800}
+.verse-vote-row{display:flex;gap:10px;padding:0 16px 24px;overflow-x:auto}
+.verse-vote-row::-webkit-scrollbar{display:none}
+.verse-vote-card{flex-shrink:0;width:165px;height:215px;border-radius:14px;overflow:hidden;position:relative;cursor:pointer;background:linear-gradient(160deg,#100820,#1a0a30)}
+.verse-vote-excl{position:absolute;top:10px;left:10px;font-size:9px;font-weight:700;color:#fff;background:rgba(255,255,255,0.15);border-radius:8px;padding:2px 7px;z-index:3;border:1px solid rgba(255,255,255,0.2)}
+.verse-vote-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.85))}
+.verse-vote-title{position:absolute;bottom:12px;left:10px;right:10px;font-size:14px;font-weight:800;line-height:1.35;color:#fff;z-index:3}
+.verse-fab{position:absolute;bottom:88px;right:16px;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#4ADE80,#22C55E);display:flex;align-items:center;justify-content:center;font-size:19px;cursor:pointer;box-shadow:0 4px 18px rgba(74,222,128,0.45);z-index:20}
 
-    .player-center {
-      flex:1; display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:9px;
-    }
-    .drama-poster { font-size:88px; filter:drop-shadow(0 0 40px rgba(124,58,237,0.4)); }
-    .ep-badge {
-      background:rgba(124,58,237,0.2); border:1px solid rgba(124,58,237,0.4);
-      border-radius:20px; padding:4px 14px; font-size:11px; color:#A78BFA; font-weight:700;
-    }
-    .ep-title-text { font-size:17px; font-weight:700; text-align:center; padding:0 32px; color:#eee; }
-    .trigger-hint { font-size:11px; color:#555; text-align:center; }
-    .trigger-btn {
-      background:#7C3AED; color:#fff; border:none; border-radius:24px;
-      padding:13px 32px; font-size:15px; font-weight:700; cursor:pointer;
-      box-shadow:0 4px 20px rgba(124,58,237,0.4);
-    }
-    .trigger-btn:disabled { background:#222; color:#555; cursor:default; box-shadow:none; }
+/* ═══ SWIPE ═══ */
+#s-swipe{background:#6B21A8}
+.swipe-header-area{background:#6B21A8;padding:0 16px 10px;flex-shrink:0;position:relative;display:flex;align-items:center}
+.swipe-back{font-size:26px;color:#fff;cursor:pointer;padding:2px 8px 2px 0}
+.swipe-title{position:absolute;left:50%;transform:translateX(-50%);font-size:16px;font-weight:800;font-style:italic;color:#fff}
+.swipe-card-area{flex:1;padding:0 14px 8px;display:flex;flex-direction:column;background:#6B21A8}
+.swipe-card{flex:1;border-radius:22px;overflow:hidden;position:relative;background:url('source/IMG_8906.PNG') center top/cover no-repeat;min-height:360px}
+.swipe-card-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.05) 0%,rgba(0,0,0,0.0) 40%,rgba(0,0,0,0.55) 72%,rgba(0,0,0,0.88) 100%)}
+.swipe-about-btn{position:absolute;top:14px;right:14px;background:#7C3AED;color:#fff;border:none;border-radius:20px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;z-index:5}
+.swipe-play-btn{position:absolute;right:14px;bottom:16px;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#84CC16,#22C55E);display:flex;align-items:center;justify-content:center;font-size:16px;z-index:5;cursor:pointer}
+.swipe-card-info{position:absolute;bottom:16px;left:16px;right:70px;z-index:5}
+.swipe-action-row{display:flex;justify-content:flex-end;align-items:center;padding:8px 4px 0}
+.swipe-drama-title{font-family:Georgia,serif;font-size:17px;font-style:italic;color:#F59E0B;text-shadow:0 1px 6px rgba(0,0,0,0.6);margin-bottom:4px;line-height:1.3}
+.swipe-char-name{font-size:24px;font-weight:900;color:#fff;margin-bottom:6px;text-shadow:0 2px 8px rgba(0,0,0,0.5)}
+.swipe-stats{display:inline-block;background:rgba(0,0,0,0.5);border-radius:20px;padding:4px 12px;font-size:13px;color:#ddd;margin-bottom:10px}
+.swipe-tags{display:flex;gap:6px;flex-wrap:wrap}
+.swipe-tag{background:rgba(124,58,237,0.7);color:#E9D5FF;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid rgba(167,139,250,0.4)}
+.swipe-chat-btn{background:#84CC16;color:#000;border:none;border-radius:22px;padding:12px 28px;font-size:18px;font-weight:900;cursor:pointer;letter-spacing:0.5px;box-shadow:0 4px 16px rgba(132,204,22,0.35)}
+.swipe-nav{display:flex;padding:10px 0 28px;flex-shrink:0;background:#6B21A8}
+.swipe-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.swipe-nav-icon{width:44px;height:32px;display:flex;align-items:center;justify-content:center;font-size:20px;border-radius:16px}
+.swipe-nav-item.active .swipe-nav-icon{background:rgba(109,40,217,0.85);color:#fff}
+.swipe-nav-label{font-size:10px;color:rgba(255,255,255,0.6)}
+.swipe-nav-item.active .swipe-nav-label{color:#fff}
+.swipe-nav-item:not(.active) .swipe-nav-icon{color:rgba(255,255,255,0.55)}
 
-    .progress-area { padding:0 20px 8px; }
-    .progress-bar-bg { height:3px; background:rgba(255,255,255,0.12); border-radius:2px; margin-bottom:8px; }
-    .progress-fill { height:100%; background:#7C3AED; border-radius:2px; transition:width 0.4s ease; }
-    .progress-times { display:flex; justify-content:space-between; font-size:11px; color:#666; }
+/* ═══ ABOUT HIM ═══ */
+#s-about{background:#000}
+.about-top-back{padding:10px 16px 6px;flex-shrink:0}
+.about-top-back span{font-size:26px;cursor:pointer;color:#fff}
+.about-char-row{display:flex;align-items:center;padding:6px 16px 14px;gap:12px;flex-shrink:0}
+.about-av{width:52px;height:52px;border-radius:50%;overflow:hidden;flex-shrink:0;background:url('source/IMG_8906.PNG') center top/cover}
+.about-char-info{flex:1}
+.about-char-name{font-size:18px;font-weight:800}
+.about-char-meta{font-size:12px;color:#888;margin-top:2px}
+.about-chat-btn{background:#7C3AED;color:#fff;border:none;border-radius:20px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer}
+.about-tags{display:flex;gap:7px;padding:0 16px 14px;flex-shrink:0;flex-wrap:wrap}
+.about-tag{background:#1a0a35;border:1px solid rgba(167,139,250,0.4);color:#C4B5FD;padding:5px 14px;border-radius:20px;font-size:13px;font-weight:600}
+.about-bio{font-size:13px;color:#888;line-height:1.75;padding:0 16px 18px}
+.about-photos-grid{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:0 16px 10px}
+.about-photo{border-radius:10px;overflow:hidden;height:160px;background:url('source/IMG_8906.PNG') center/cover;position:relative}
+.about-photo:nth-child(1){background:url('source/IMG_8906.PNG') center top/cover}
+.about-photo:nth-child(2){background:url('source/abouthim.PNG') center 20%/cover}
+.about-photo:nth-child(3){grid-column:1/-1;height:180px;background:url('source/Swipe.PNG') center 15%/cover}
+.storeel-orig{display:flex;align-items:center;gap:6px;padding:10px 16px 20px;font-size:12px;color:#4ADE80;font-weight:700}
+.storeel-orig-s{width:22px;height:22px;border-radius:6px;background:#4ADE80;color:#000;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
 
-    .player-controls {
-      display:flex; align-items:center; justify-content:center; gap:28px; padding:6px 0 18px;
-    }
-    .ctrl-btn { font-size:22px; cursor:pointer; opacity:0.7; }
-    .ctrl-play {
-      width:50px; height:50px; border-radius:50%; background:#7C3AED;
-      display:flex; align-items:center; justify-content:center; font-size:22px; cursor:pointer;
-    }
+/* ═══ MESSAGE LIST ═══ */
+#s-msglist{background:#000}
+.msg-list-scroll{flex:1;overflow-y:auto}
+.msg-list-scroll::-webkit-scrollbar{display:none}
+.msg-row{display:flex;align-items:center;padding:14px 16px;gap:12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04)}
+.msg-row:active{background:#0a0a0a}
+.msg-av{width:54px;height:54px;border-radius:50%;overflow:hidden;flex-shrink:0;position:relative}
+.msg-av-single{width:100%;height:100%;object-fit:cover;background:url('source/IMG_8906.PNG') center top/cover}
+.msg-av-double{width:100%;height:100%;position:relative}
+.msg-av-d1{position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:url('source/IMG_8906.PNG') center top/cover;border:2px solid #000}
+.msg-av-d2{position:absolute;right:0;bottom:0;width:36px;height:36px;border-radius:50%;background:url('source/Swipe.PNG') center 10%/cover;border:2px solid #000}
+.msg-info{flex:1;min-width:0}
+.msg-top-row{display:flex;justify-content:space-between;margin-bottom:4px}
+.msg-name-lv{font-size:15px;font-weight:700;display:flex;align-items:center;gap:5px}
+.msg-lv-badge{font-size:11px;color:#888}
+.msg-time{font-size:11px;color:#555}
+.msg-preview{font-size:13px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* Episode end overlay */
-    .ep-end-overlay {
-      position:absolute; inset:0; background:rgba(0,0,0,0.88);
-      display:none; flex-direction:column; align-items:center;
-      justify-content:center; z-index:15; gap:12px;
-    }
-    .ep-end-overlay.show { display:flex; }
-    .ep-end-label { font-size:12px; color:#888; letter-spacing:1px; text-transform:uppercase; }
-    .ep-end-title { font-size:20px; font-weight:800; text-align:center; padding:0 32px; }
-    .next-ep-card {
-      background:#111; border-radius:16px; padding:14px 18px;
-      display:flex; align-items:center; gap:14px; width:320px; border:1px solid #222;
-    }
-    .next-ep-thumb {
-      width:52px; height:52px; border-radius:10px;
-      background:linear-gradient(135deg,#1a0a2e,#2d1010);
-      display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;
-    }
-    .next-ep-info { flex:1; }
-    .next-ep-label { font-size:10px; color:#555; margin-bottom:3px; }
-    .next-ep-name { font-size:13px; font-weight:700; }
-    .countdown-circle {
-      width:44px; height:44px; border-radius:50%; background:#7C3AED;
-      display:flex; align-items:center; justify-content:center;
-      font-size:17px; font-weight:800; flex-shrink:0;
-    }
-    /* Skip & next buttons in overlay */
-    .overlay-actions { display:flex; gap:10px; align-items:center; margin-top:4px; }
-    .skip-bubble-btn {
-      background:transparent; color:#aaa; border:1px solid #333;
-      border-radius:20px; padding:9px 20px; font-size:13px; font-weight:600; cursor:pointer;
-    }
-    .next-ep-btn {
-      background:#fff; color:#000; border:none;
-      border-radius:20px; padding:9px 20px; font-size:13px; font-weight:700; cursor:pointer;
-    }
-    .suppressed-label {
-      font-size:11px; color:#555; display:none;
-    }
-    .suppressed-label.show { display:block; }
+/* ═══ CONVERSATION ═══ */
+#s-conv{background:#000;position:relative}
+.conv-bg{position:absolute;inset:0;z-index:0;background:url('source/background.PNG') center top/cover no-repeat}
+.conv-bg-overlay{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,0.2) 0%,rgba(0,0,0,0.05) 30%,rgba(0,0,0,0.45) 65%,rgba(0,0,0,0.92) 100%)}
+.conv-sb{position:relative;z-index:10;height:48px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 8px;font-size:13px;font-weight:600;background:#000;flex-shrink:0}
+.conv-header{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:4px 16px 10px;background:rgba(0,0,0,0.55);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.conv-char-left{display:flex;align-items:center;gap:6px}
+.conv-char-av{width:28px;height:28px;border-radius:50%;background:url('source/IMG_8906.PNG') center top/cover;border:1px solid rgba(255,255,255,0.3)}
+.conv-char-name{font-size:15px;font-weight:700;color:#fff}
+.conv-char-lv{font-size:11px;color:rgba(255,255,255,0.6)}
+.conv-gems{font-size:13px;font-weight:700;color:#fff;display:flex;align-items:center;gap:4px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:4px 10px 4px 7px}
+.conv-heart-icon{font-size:13px;color:#F87171}
+.spark-banner{position:relative;z-index:10;text-align:center;font-size:11px;font-weight:700;color:#4ADE80;letter-spacing:0.5px;padding:5px 0;background:rgba(0,0,0,0.2);flex-shrink:0}
+.spark-banner.hidden{display:none}
+/* Chat scroll */
+#panel-chat{position:relative;z-index:10;flex:1;overflow-y:auto;padding:8px 14px 4px}
+#panel-chat::-webkit-scrollbar{display:none}
+/* Char bubble */
+.char-msg-group{display:flex;flex-direction:column;gap:3px;margin-bottom:10px;max-width:82%}
+.char-name-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.char-bubble-av{width:22px;height:22px;border-radius:50%;background:url('source/IMG_8906.PNG') center top/cover;border:1px solid rgba(255,255,255,0.2);flex-shrink:0}
+.char-name-pill{font-size:11px;font-weight:700;color:#C4B5FD;background:rgba(124,58,237,0.25);border:1px solid rgba(167,139,250,0.4);border-radius:20px;padding:2px 9px}
+.char-bubble{background:rgba(255,255,255,0.96);color:#111;padding:11px 14px;border-radius:5px 18px 18px 18px;font-size:14px;line-height:1.6;box-shadow:0 2px 16px rgba(0,0,0,0.4)}
+/* User bubble */
+.user-msg-group{display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-bottom:10px;align-self:flex-end;max-width:80%}
+.user-bubble{background:#7C3AED;color:#fff;padding:11px 14px;border-radius:18px 18px 5px 18px;font-size:14px;line-height:1.6;box-shadow:0 2px 16px rgba(124,58,237,0.5)}
+.user-meta-row{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.user-plus1{width:18px;height:18px;border-radius:50%;background:#EF4444;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;flex-shrink:0}
+.user-visitor-id{font-size:10px;color:rgba(255,255,255,0.45);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-av-circle{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#4ADE80,#22C55E);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#000;flex-shrink:0}
+/* Typing dots */
+.typing-group{display:none;margin-bottom:8px}
+.typing-group.show{display:flex;flex-direction:column;gap:3px}
+.typing-bubble-wrap{background:rgba(255,255,255,0.92);border-radius:5px 18px 18px 18px;padding:12px 16px;display:inline-flex;gap:5px;align-items:center;box-shadow:0 2px 12px rgba(0,0,0,0.3)}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:0.4}30%{transform:translateY(-5px);opacity:1}}
+.tdot{width:7px;height:7px;border-radius:50%;background:#999}
+.tdot:nth-child(1){animation:td 1.2s ease-in-out 0s infinite}
+.tdot:nth-child(2){animation:td 1.2s ease-in-out 0.2s infinite}
+.tdot:nth-child(3){animation:td 1.2s ease-in-out 0.4s infinite}
+/* Proactive card in chat */
+.proactive-card{background:rgba(8,6,20,0.82);backdrop-filter:blur(14px);border:1px solid rgba(124,58,237,0.4);border-radius:18px;position:relative;overflow:hidden;margin-bottom:10px}
+.proactive-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#7C3AED,#9333ea)}
+.pc-inner{padding:13px 13px 11px 16px}
+.pc-label{font-size:10px;color:#7C3AED;font-weight:700;letter-spacing:0.5px;margin-bottom:9px;display:flex;align-items:center;gap:5px}
+.pc-dot{width:5px;height:5px;border-radius:50%;background:#7C3AED;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.pc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.pc-avatar{width:50px;height:50px;border-radius:14px;background:url('source/IMG_8906.PNG') center top/cover;flex-shrink:0;box-shadow:0 0 14px rgba(124,58,237,0.4)}
+.pc-meta .pc-name{font-size:15px;font-weight:800;color:#fff;margin-bottom:5px}
+.pc-state{display:inline-flex;align-items:center;gap:5px;background:rgba(124,58,237,0.18);border:1px solid rgba(124,58,237,0.3);border-radius:10px;padding:3px 9px;font-size:11px;color:#C4B5FD}
+.pc-msg{font-size:13px;color:#ddd;line-height:1.6;font-style:italic;border-left:2px solid rgba(124,58,237,0.5);padding-left:10px;margin-bottom:9px}
+.pc-footer{display:flex;justify-content:space-between;padding-top:7px;border-top:1px solid rgba(255,255,255,0.05);font-size:10px;color:#555}
+/* IAP hook */
+.iap-hook{background:rgba(20,8,40,0.85);border:1px solid rgba(124,58,237,0.4);border-radius:14px;padding:12px;margin-bottom:10px}
+.iap-label{font-size:10px;color:#A78BFA;font-weight:700;letter-spacing:0.5px;margin-bottom:4px}
+.iap-text{font-size:12px;color:#bbb;line-height:1.5;margin-bottom:8px}
+.iap-btn{background:#7C3AED;color:#fff;border:none;border-radius:20px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer}
+/* Chat input bar */
+.conv-input-wrap{position:relative;z-index:10;padding:8px 14px 32px;background:rgba(0,0,0,0.65);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.05);flex-shrink:0}
+.conv-action-row{display:flex;justify-content:flex-end;gap:12px;margin-bottom:7px}
+.conv-action-btn{font-size:18px;color:rgba(255,255,255,0.4);cursor:pointer}
+.conv-input-row{display:flex;align-items:center;gap:8px}
+.conv-input-left-icon{font-size:20px;color:rgba(255,255,255,0.35);cursor:pointer;flex-shrink:0}
+.conv-input-field{flex:1;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.1);border-radius:22px;padding:10px 14px;color:#fff;font-size:14px;outline:none}
+.conv-input-field::placeholder{color:rgba(255,255,255,0.3)}
+.conv-input-right-icon{font-size:20px;color:rgba(255,255,255,0.35);cursor:pointer;flex-shrink:0}
+.conv-send-btn{width:34px;height:34px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;cursor:pointer;flex-shrink:0;transition:opacity 0.15s,transform 0.15s;opacity:0.4}
+.conv-send-btn.ready{opacity:1}
+.conv-send-btn:active{transform:scale(0.88)}
+/* Diary panel */
+#panel-diary{position:relative;z-index:10;flex:1;overflow-y:auto;background:rgba(0,0,0,0.78);backdrop-filter:blur(20px);padding:14px 14px 20px}
+#panel-diary::-webkit-scrollbar{display:none}
+.diary-personal-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.3);border-radius:20px;padding:5px 13px;font-size:11px;color:#A78BFA;margin-bottom:14px}
+.diary-card{background:#0D0D0D;border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid #1A1A1A;position:relative;overflow:hidden}
+.diary-card-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.diary-date{font-size:11px;color:#555}
+.diary-new{font-size:10px;color:#4ADE80;font-weight:700}
+.diary-title{font-size:14px;font-weight:700;color:#E2D9F3;margin-bottom:7px}
+.diary-body{font-size:13px;color:#777;line-height:1.75}
+.diary-body em{color:#C4B5FD;font-style:italic}
+.diary-footer{display:flex;justify-content:space-between;margin-top:10px;padding-top:9px;border-top:1px solid #1A1A1A;font-size:12px;color:#555}
+.lock-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.75);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px}
+.lock-hint{font-size:11px;color:#888}
+.unlock-btn{background:#7C3AED;color:#fff;border:none;border-radius:20px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer}
+/* Tabs in conv */
+.conv-tabs{position:relative;z-index:10;display:flex;border-bottom:1px solid rgba(255,255,255,0.08);flex-shrink:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(10px)}
+.conv-tab{flex:1;text-align:center;padding:10px 0;font-size:14px;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.conv-tab.active{color:#fff;border-bottom-color:#fff;font-weight:700}
+/* Bubble animate */
+@keyframes bIn{0%{opacity:0;transform:translateY(14px) scale(0.93)}65%{transform:translateY(-2px) scale(1.01)}100%{opacity:1;transform:none}}
+.b-anim{animation:bIn 300ms cubic-bezier(0.16,1,0.3,1) forwards}
 
-    /* ════════════════════════════════════════
-       PHONE-LEVEL FLOATING BUBBLE (above all screens)
-    ════════════════════════════════════════ */
-    .phone-bubble {
-      position:absolute; bottom:74px; left:16px; right:16px;
-      background:#1C1C1C; border-radius:20px; border-left:3px solid #7C3AED;
-      padding:12px 14px; display:flex; align-items:center; gap:12px;
-      z-index:90; cursor:pointer;
-      transform:translateY(120px); opacity:0;
-      transition:transform 280ms cubic-bezier(0.16,1,0.3,1),opacity 280ms ease;
-      box-shadow:0 8px 32px rgba(0,0,0,0.65);
-    }
-    .phone-bubble.in  { transform:translateY(0); opacity:1; }
-    .phone-bubble.out { transform:translateY(120px); opacity:0; }
-    .pb-avatar {
-      width:40px; height:40px; border-radius:12px;
-      background:linear-gradient(135deg,#1e3a5f,#0f1f35);
-      display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;
-      box-shadow:0 0 12px rgba(124,58,237,0.3);
-    }
-    .pb-content { flex:1; min-width:0; }
-    .pb-name { font-size:12px; font-weight:700; color:#A78BFA; margin-bottom:2px; }
-    .pb-preview { font-size:13px; color:#ccc; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .pb-close { font-size:16px; color:#555; padding:4px 6px; cursor:pointer; flex-shrink:0; }
+/* ═══ PHONE-LEVEL OVERLAYS ═══ */
+/* Episode trigger — 与 binge sheet 同款底部弹出 */
+.phone-bubble{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(160deg,#0f0720,#1a061e);border-radius:24px 24px 0 0;padding:0 22px 34px;z-index:90;transform:translateY(100%);transition:transform 360ms cubic-bezier(0.16,1,0.3,1);overflow:hidden}
+.phone-bubble.in{transform:translateY(0)}
+.phone-bubble.out{transform:translateY(100%)}
+.pb-body{display:flex;align-items:flex-end;min-height:155px;position:relative}
+.pb-text{flex:1;padding-right:108px;padding-bottom:4px}
+.pb-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.18);border:1px solid rgba(124,58,237,0.35);border-radius:12px;padding:4px 11px;font-size:11px;color:#C4B5FD;font-weight:700;margin-bottom:10px}
+.pb-title{font-size:20px;font-weight:800;line-height:1.3;margin-bottom:6px;color:#fff}
+.pb-preview{font-size:13px;color:#999;line-height:1.5;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pb-char-photo{position:absolute;right:-8px;bottom:0;width:112px;height:172px;background:url('source/IMG_8906.PNG') center top/cover;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.5) 15%,#000 35%,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.5) 15%,#000 35%,#000 78%,transparent 100%)}
+/* Binge 连续观看 sheet */
+.phone-binge-overlay{position:absolute;inset:0;z-index:80;display:none;flex-direction:column;justify-content:flex-end;background:rgba(0,0,0,0.55)}
+.phone-binge-overlay.show{display:flex}
+.binge-sheet{background:linear-gradient(160deg,#0f0720,#1a061e);border-radius:24px 24px 0 0;padding:0 22px 38px;position:relative;overflow:hidden;min-height:260px}
+.binge-handle{width:36px;height:4px;background:#2a2a2a;border-radius:2px;margin:14px auto 18px}
+.binge-close{position:absolute;top:14px;right:18px;font-size:20px;color:#555;cursor:pointer;z-index:5}
+.binge-body{display:flex;align-items:flex-end;min-height:180px;position:relative}
+.binge-text{flex:1;padding-right:110px;padding-bottom:4px}
+.binge-eyebrow{display:inline-flex;align-items:center;gap:6px;background:rgba(124,58,237,0.18);border:1px solid rgba(124,58,237,0.35);border-radius:12px;padding:4px 11px;font-size:11px;color:#C4B5FD;font-weight:700;margin-bottom:12px}
+.binge-edot{width:6px;height:6px;border-radius:50%;background:#7C3AED;animation:pulse 2s infinite}
+.binge-title{font-size:22px;font-weight:800;line-height:1.3;margin-bottom:8px}
+.binge-sub{font-size:13px;color:#888;line-height:1.6;margin-bottom:18px}
+.binge-cta{background:linear-gradient(135deg,#7C3AED,#9333ea);color:#fff;border:none;border-radius:22px;padding:13px 26px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(124,58,237,0.5)}
+.binge-char-art{position:absolute;right:-8px;bottom:0;width:130px;height:210px;background:url('source/IMG_8906.PNG') center top/cover;-webkit-mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.4) 10%,#000 30%,#000 78%,transparent 100%);mask-image:linear-gradient(to bottom,transparent 0%,rgba(0,0,0,0.4) 10%,#000 30%,#000 78%,transparent 100%)}
 
-    /* ════════════════════════════════════════
-       PHONE-LEVEL BINGE SHEET (above all screens)
-    ════════════════════════════════════════ */
-    .phone-binge-overlay {
-      position:absolute; inset:0; z-index:80; display:none;
-      flex-direction:column; justify-content:flex-end;
-      background:rgba(0,0,0,0.5);
-    }
-    .phone-binge-overlay.show { display:flex; }
-    .binge-sheet {
-      background:linear-gradient(160deg,#0f0720 0%,#1a061e 100%);
-      border-radius:24px 24px 0 0; padding:0 22px 38px;
-      position:relative; overflow:hidden; min-height:260px;
-    }
-    .binge-handle { width:36px; height:4px; background:#2a2a2a; border-radius:2px; margin:14px auto 18px; }
-    .binge-close {
-      position:absolute; top:14px; right:18px;
-      font-size:18px; color:#555; cursor:pointer; z-index:5;
-    }
-    .binge-body { display:flex; align-items:flex-end; min-height:180px; position:relative; }
-    .binge-text { flex:1; padding-right:90px; padding-bottom:4px; }
-    .binge-eyebrow {
-      display:inline-flex; align-items:center; gap:6px;
-      background:rgba(124,58,237,0.18); border:1px solid rgba(124,58,237,0.35);
-      border-radius:12px; padding:4px 11px; font-size:11px; color:#C4B5FD;
-      font-weight:700; margin-bottom:12px;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    .binge-dot { width:6px; height:6px; border-radius:50%; background:#7C3AED; animation:pulse 2s infinite; }
-    .binge-state {
-      display:inline-flex; align-items:center; gap:5px;
-      background:rgba(124,58,237,0.15); border:1px solid rgba(124,58,237,0.3);
-      border-radius:10px; padding:3px 9px; font-size:11px; color:#A78BFA;
-      margin-bottom:12px; margin-left:4px;
-    }
-    .binge-title { font-size:23px; font-weight:800; line-height:1.3; margin-bottom:8px; }
-    .binge-sub { font-size:13px; color:#888; line-height:1.6; margin-bottom:20px; }
-    .binge-cta {
-      background:linear-gradient(135deg,#7C3AED,#9333ea); color:#fff; border:none;
-      border-radius:22px; padding:13px 26px; font-size:14px; font-weight:700; cursor:pointer;
-      box-shadow:0 4px 16px rgba(124,58,237,0.5);
-    }
-    .binge-char-art {
-      position:absolute; right:-10px; bottom:0;
-      font-size:108px; line-height:1;
-      filter:drop-shadow(0 0 24px rgba(124,58,237,0.45));
-    }
+/* ═══ EPISODE PLAYER ═══ */
+#s-player{background:#000}
+.player-bg{flex:1;background:linear-gradient(160deg,#0a0520,#1a0a10);position:relative;display:flex;flex-direction:column}
+.drama-title-bar{position:absolute;top:0;left:0;right:0;padding:10px 16px;background:linear-gradient(#000a,transparent);display:flex;align-items:center;gap:10px;z-index:5}
+.back-circle{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer}
+.drama-info .drama-name{font-size:14px;font-weight:700}
+.drama-info .ep-info{font-size:11px;color:#aaa;margin-top:1px}
+.player-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px}
+.drama-poster{font-size:88px;filter:drop-shadow(0 0 40px rgba(124,58,237,0.4))}
+.ep-badge{background:rgba(124,58,237,0.2);border:1px solid rgba(124,58,237,0.4);border-radius:20px;padding:4px 14px;font-size:11px;color:#A78BFA;font-weight:700}
+.ep-title-text{font-size:17px;font-weight:700;text-align:center;padding:0 32px;color:#eee}
+.trigger-hint{font-size:11px;color:#555;text-align:center}
+.trigger-btn{background:#7C3AED;color:#fff;border:none;border-radius:24px;padding:13px 32px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(124,58,237,0.4)}
+.trigger-btn:disabled{background:#222;color:#555;cursor:default;box-shadow:none}
+.progress-area{padding:0 20px 8px}
+.prog-bar-bg{height:3px;background:rgba(255,255,255,0.12);border-radius:2px;margin-bottom:8px}
+.prog-fill{height:100%;background:#7C3AED;border-radius:2px;transition:width 0.4s}
+.prog-times{display:flex;justify-content:space-between;font-size:11px;color:#666}
+.player-controls{display:flex;align-items:center;justify-content:center;gap:28px;padding:6px 0 18px}
+.ctrl-btn{font-size:22px;cursor:pointer;opacity:0.7}
+.ctrl-play{width:50px;height:50px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer}
+.ep-end-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.88);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:15;gap:12px}
+.ep-end-overlay.show{display:flex}
+.ep-end-label{font-size:12px;color:#888;letter-spacing:1px;text-transform:uppercase}
+.ep-end-title{font-size:20px;font-weight:800;text-align:center;padding:0 32px}
+.next-ep-card{background:#111;border-radius:16px;padding:14px 18px;display:flex;align-items:center;gap:14px;width:320px;border:1px solid #222}
+.next-ep-thumb{width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,#1a0a2e,#2d1010);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.next-ep-info{flex:1}
+.next-ep-label{font-size:10px;color:#555;margin-bottom:3px}
+.next-ep-name{font-size:13px;font-weight:700}
+.countdown-circle{width:44px;height:44px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;flex-shrink:0}
+.overlay-actions{display:flex;gap:10px;margin-top:4px}
+.skip-bubble-btn{background:transparent;color:#aaa;border:1px solid #333;border-radius:20px;padding:9px 20px;font-size:13px;font-weight:600;cursor:pointer}
+.next-ep-btn{background:#fff;color:#000;border:none;border-radius:20px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;display:none}
+.suppressed-label{font-size:11px;color:#555;display:none}
+.suppressed-label.show{display:block}
+.player-inter-nav{display:flex;border-top:1px solid #1A1A1A;padding:8px 0 28px;flex-shrink:0;background:#000}
 
-    /* ════════════════════════════════════════
-       SCREEN — MESSAGE LIST
-    ════════════════════════════════════════ */
-    .page-header {
-      display:flex; align-items:center; padding:0 18px 12px;
-      position:relative; flex-shrink:0;
-    }
-    .back-btn {
-      width:36px; height:36px; display:flex; align-items:center;
-      justify-content:center; font-size:22px; cursor:pointer; border-radius:50%;
-    }
-    .header-title {
-      position:absolute; left:50%; transform:translateX(-50%);
-      font-size:16px; font-weight:800; letter-spacing:0.3px; white-space:nowrap;
-    }
-    .msg-row {
-      display:flex; align-items:center; padding:13px 18px; gap:13px;
-      cursor:pointer; border-bottom:1px solid #0F0F0F; transition:background 0.15s;
-    }
-    .msg-row:active { background:#111; }
-    .char-avatar {
-      width:56px; height:56px; border-radius:17px; overflow:hidden; flex-shrink:0;
-      display:flex; align-items:center; justify-content:center; font-size:26px;
-    }
-    .av-cassius { background:linear-gradient(135deg,#1e3a5f,#0f1f35); }
-    .av-marcus  { background:linear-gradient(135deg,#3d1a00,#1a0800); }
-    .msg-info { flex:1; min-width:0; }
-    .msg-top { display:flex; justify-content:space-between; margin-bottom:4px; }
-    .msg-name { font-size:15px; font-weight:700; }
-    .msg-time { font-size:11px; color:#555; }
-    .msg-preview { font-size:12px; color:#555; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .lv-badge { font-size:11px; color:#666; }
-    .diary-dot { width:8px; height:8px; border-radius:50%; background:#7C3AED; flex-shrink:0; }
+/* ═══ DEMO NAV ═══ */
+.demo-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:390px;background:rgba(8,0,20,0.97);border-top:1px solid #2a1b4e;padding:8px 12px 10px;z-index:999}
+.demo-nav-row{display:flex;gap:5px;margin-bottom:5px}
+.demo-nav-row:last-child{margin-bottom:0}
+.demo-btn{flex:1;padding:7px 4px;border-radius:10px;background:#140828;border:1px solid #3b1e6e;color:#8B5CF6;font-size:10px;font-weight:700;cursor:pointer;text-align:center;line-height:1.5;transition:all 0.2s}
+.demo-btn.active{background:#7C3AED;color:#fff;border-color:#7C3AED}
+.demo-btn.sm{font-size:9px;padding:6px 3px}
+.demo-state-row{display:flex;align-items:center;justify-content:space-between;padding:3px 2px 0;font-size:9px;color:#555}
+.skip-dots{display:flex;gap:3px;align-items:center}
+.sdot{width:7px;height:7px;border-radius:50%;background:#333}
+.sdot.used{background:#7C3AED}
+.sdot.supp{background:#ef4444}
+.greet-sub{display:none}
+.greet-sub.show{display:flex}
 
-    /* ════════════════════════════════════════
-       SCREEN — CONVERSATION
-    ════════════════════════════════════════ */
-    .conv-header {
-      display:flex; align-items:center; padding:0 14px 10px; gap:10px; flex-shrink:0;
-    }
-    .conv-av {
-      width:38px; height:38px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      font-size:18px; flex-shrink:0;
-    }
-    .conv-name { font-size:15px; font-weight:700; }
-    .conv-sub  { font-size:11px; color:#666; }
-    .tabs-bar { display:flex; border-bottom:1px solid #1A1A1A; flex-shrink:0; }
-    .tab {
-      flex:1; text-align:center; padding:11px 0; font-size:14px;
-      color:#555; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s;
-    }
-    .tab.active { color:#fff; border-bottom-color:#7C3AED; font-weight:700; }
+/* ═══ PROFILE ═══ */
+#s-profile{background:#111}
+.profile-scroll{flex:1;overflow-y:auto}
+.profile-scroll::-webkit-scrollbar{display:none}
+.profile-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 16px}
+.profile-av{width:52px;height:52px;border-radius:50%;background:#1a2e1a;display:flex;align-items:center;justify-content:center;border:2px solid #2a3a2a;flex-shrink:0}
+.profile-av-row{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.profile-username{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.profile-uid{font-size:10px;color:#555;margin-top:2px}
+.profile-header-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.profile-bonus-badge{background:#c8ff00;color:#000;font-size:10px;font-weight:800;padding:3px 9px;border-radius:10px;letter-spacing:0.3px}
+.profile-signin-btn{background:transparent;border:1.5px solid #555;border-radius:8px;color:#fff;font-size:12px;font-weight:600;padding:5px 14px;cursor:pointer}
+.profile-vip-banner{margin:0 14px 14px;border-radius:14px;background:linear-gradient(110deg,#2a5018,#3d6e22 50%,#6fa832 100%);padding:14px 16px;position:relative;overflow:hidden;cursor:pointer}
+.profile-vip-inner{margin-top:2px}
+.profile-vip-title{font-size:16px;font-weight:900;color:#fff;letter-spacing:0.5px}
+.profile-vip-sub{font-size:11px;color:rgba(255,255,255,0.7);margin-top:3px}
+.profile-vip-upgrade{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:rgba(255,255,255,0.9);display:flex;align-items:center;gap:2px}
+.profile-vip-label{position:absolute;top:0;left:14px;background:rgba(0,0,0,0.35);color:#c8ff00;font-size:10px;font-weight:800;padding:2px 8px;border-radius:0 0 7px 7px;letter-spacing:0.5px}
+.profile-wallet{margin:0 14px 14px;background:#1c1c1e;border-radius:14px;padding:14px 16px}
+.profile-wallet-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.profile-wallet-title{font-size:15px;font-weight:700;color:#fff}
+.profile-wallet-detail{font-size:13px;color:#888}
+.profile-wallet-row{display:flex;align-items:center}
+.profile-coin-item{flex:1}
+.profile-coin-label{font-size:12px;color:#888;display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.profile-coin-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.profile-coin-val{font-size:22px;font-weight:800;color:#fff}
+.profile-topup-btn{background:transparent;border:1.5px solid #4ADE80;border-radius:20px;color:#4ADE80;font-size:12px;font-weight:700;padding:7px 18px;cursor:pointer;white-space:nowrap}
+.profile-menu{margin:0 14px 20px;background:#1c1c1e;border-radius:14px;overflow:hidden}
+.profile-menu-item{display:flex;align-items:center;padding:15px 16px;border-bottom:1px solid #2a2a2a;cursor:pointer;gap:14px}
+.profile-menu-item:last-child{border-bottom:none}
+.profile-menu-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.profile-menu-label{flex:1;font-size:15px;color:#e0e0e0}
+.profile-menu-arrow{color:#444;font-size:20px;line-height:1}
 
-    /* Chat bubbles */
-    .bubbles { padding:14px 16px; display:flex; flex-direction:column; gap:10px; }
-    .bubble-wrap { display:flex; flex-direction:column; }
-    .bubble-wrap.me { align-items:flex-end; }
-    .bubble-sender { font-size:11px; color:#555; margin-bottom:3px; padding-left:2px; }
-    .chat-bubble {
-      max-width:78%; padding:10px 14px; font-size:13px; line-height:1.55; border-radius:18px;
-    }
-    .chat-bubble.char { background:#1A1A1A; border-radius:4px 18px 18px 18px; color:#ddd; }
-    .chat-bubble.me   { background:#7C3AED; border-radius:18px 18px 4px 18px; color:#fff; }
-
-    /* ── REDESIGNED Proactive Message Card ── */
-    .proactive-card {
-      background:linear-gradient(135deg,#0d0a1e,#160828);
-      border:1px solid rgba(124,58,237,0.3); border-radius:18px;
-      position:relative; overflow:hidden; margin-bottom:4px;
-    }
-    .proactive-card::before {
-      content:''; position:absolute; left:0; top:0; bottom:0;
-      width:3px; background:linear-gradient(180deg,#7C3AED,#9333ea);
-    }
-    .proactive-inner { padding:14px 14px 12px 17px; }
-    .proactive-label {
-      font-size:10px; color:#7C3AED; font-weight:700; letter-spacing:0.5px;
-      margin-bottom:10px; display:flex; align-items:center; gap:5px;
-    }
-    .p-dot { width:5px; height:5px; border-radius:50%; background:#7C3AED; animation:pulse 2s infinite; flex-shrink:0; }
-    .proactive-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-    .proactive-avatar {
-      width:56px; height:56px; border-radius:16px;
-      background:linear-gradient(135deg,#1e3a5f,#0f1f35);
-      display:flex; align-items:center; justify-content:center; font-size:28px;
-      flex-shrink:0; box-shadow:0 0 18px rgba(124,58,237,0.4);
-    }
-    .proactive-meta { flex:1; }
-    .proactive-name { font-size:16px; font-weight:800; color:#fff; margin-bottom:6px; }
-    .proactive-state {
-      display:inline-flex; align-items:center; gap:5px;
-      background:rgba(124,58,237,0.18); border:1px solid rgba(124,58,237,0.3);
-      border-radius:12px; padding:3px 10px; font-size:11px; color:#C4B5FD;
-    }
-    .proactive-message {
-      font-size:14px; color:#e0d8f5; line-height:1.65; font-style:italic;
-      border-left:2px solid rgba(124,58,237,0.45); padding-left:12px; margin-bottom:10px;
-    }
-    .proactive-footer {
-      display:flex; justify-content:space-between; align-items:center;
-      padding-top:8px; border-top:1px solid rgba(255,255,255,0.05);
-    }
-    .proactive-phase { font-size:10px; color:#555; }
-    .proactive-time  { font-size:10px; color:#444; }
-
-    /* IAP hook card */
-    .iap-hook {
-      background:linear-gradient(135deg,#160828,#240a18); border:1px solid rgba(124,58,237,0.35);
-      border-radius:14px; padding:13px; margin-top:4px; max-width:82%; cursor:pointer;
-    }
-    .iap-label { font-size:10px; color:#A78BFA; margin-bottom:5px; font-weight:700; letter-spacing:0.5px; }
-    .iap-text { font-size:12px; color:#bbb; line-height:1.5; margin-bottom:9px; }
-    .iap-btn {
-      background:#7C3AED; color:#fff; border:none; border-radius:20px;
-      padding:7px 16px; font-size:12px; font-weight:700; cursor:pointer;
-    }
-
-    /* Chat input */
-    .chat-input-bar {
-      display:flex; align-items:center; gap:10px;
-      padding:10px 14px 22px; border-top:1px solid #111; flex-shrink:0;
-    }
-    .chat-input-bar input {
-      flex:1; background:#161616; border:none; border-radius:22px;
-      padding:10px 16px; color:#fff; font-size:13px; outline:none;
-    }
-    .chat-input-bar input::placeholder { color:#444; }
-    .send-btn {
-      width:38px; height:38px; border-radius:50%; background:#7C3AED;
-      display:flex; align-items:center; justify-content:center;
-      font-size:15px; cursor:pointer; flex-shrink:0;
-    }
-
-    /* Diary styles */
-    .diary-wrap { padding:14px 16px 20px; }
-    .personal-tag {
-      display:inline-flex; align-items:center; gap:6px;
-      background:rgba(124,58,237,0.13); border:1px solid rgba(124,58,237,0.3);
-      border-radius:20px; padding:5px 13px; font-size:11px;
-      color:#A78BFA; margin-bottom:16px;
-    }
-    .diary-card {
-      background:#0F0F0F; border-radius:16px; padding:16px;
-      margin-bottom:12px; border:1px solid #1E1E1E; position:relative; overflow:hidden;
-    }
-    .diary-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
-    .diary-card-date { font-size:11px; color:#555; }
-    .new-tag { font-size:10px; color:#4ADE80; font-weight:700; }
-    .diary-card-title { font-size:15px; font-weight:700; color:#E2D9F3; margin-bottom:8px; }
-    .diary-card-body { font-size:13px; color:#888; line-height:1.75; }
-    .diary-card-body em { color:#C4B5FD; font-style:italic; }
-    .diary-card-footer {
-      display:flex; justify-content:space-between; align-items:center;
-      margin-top:12px; padding-top:10px; border-top:1px solid #1A1A1A;
-    }
-    .diary-mood { font-size:12px; color:#555; }
-    .diary-bookmark { font-size:13px; color:#555; cursor:pointer; }
-    .lock-overlay {
-      position:absolute; inset:0; background:rgba(0,0,0,0.72); border-radius:16px;
-      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
-    }
-    .lock-icon { font-size:26px; }
-    .lock-hint { font-size:11px; color:#888; }
-    .unlock-btn {
-      background:#7C3AED; color:#fff; border:none; border-radius:20px;
-      padding:8px 20px; font-size:12px; font-weight:700; cursor:pointer;
-    }
-
-    /* ════════════════════════════════════════
-       SCREEN — SWIPE
-    ════════════════════════════════════════ */
-    .swipe-bg { background:#4C1D95; }
-    .swipe-inner {
-      flex:1; padding:0 18px 14px; display:flex; flex-direction:column; gap:12px; background:#4C1D95;
-    }
-    .swipe-card-outer {
-      flex:1; border-radius:22px; overflow:hidden; position:relative;
-      background:linear-gradient(160deg,#1a0a2e,#2a1010);
-      display:flex; align-items:center; justify-content:center;
-    }
-    .swipe-char-img { font-size:100px; }
-    .about-btn {
-      position:absolute; top:14px; right:14px; background:#A855F7;
-      color:#fff; border:none; border-radius:20px; padding:7px 14px;
-      font-size:13px; font-weight:700; cursor:pointer;
-    }
-    .play-circle {
-      position:absolute; right:14px; bottom:90px; width:44px; height:44px;
-      border-radius:50%; background:linear-gradient(135deg,#84CC16,#22C55E);
-      display:flex; align-items:center; justify-content:center; font-size:16px;
-    }
-    .swipe-card-info {
-      position:absolute; bottom:0; left:0; right:0; padding:20px 16px;
-      background:linear-gradient(transparent,rgba(0,0,0,0.88));
-    }
-    .swipe-drama-label { font-size:11px; color:#aaa; margin-bottom:2px; }
-    .swipe-char-name { font-size:22px; font-weight:800; margin-bottom:4px; }
-    .swipe-char-meta {
-      display:inline-block; font-size:12px; color:#ccc;
-      background:rgba(0,0,0,0.45); padding:3px 11px; border-radius:20px; margin-bottom:10px;
-    }
-    .swipe-tags { display:flex; gap:7px; flex-wrap:wrap; }
-    .swipe-tag { background:rgba(168,85,247,0.35); color:#E9D5FF; padding:4px 12px; border-radius:20px; font-size:11px; }
-    .swipe-actions { display:flex; justify-content:flex-end; }
-    .chat-btn-green {
-      background:#84CC16; color:#000; border:none; border-radius:16px;
-      padding:14px 32px; font-size:16px; font-weight:800; cursor:pointer;
-    }
-
-    /* ════════════════════════════════════════
-       SCREEN — ABOUT HIM
-    ════════════════════════════════════════ */
-    .about-hero {
-      width:100%; height:260px; flex-shrink:0;
-      background:linear-gradient(160deg,#1a0a2e,#2a1010);
-      display:flex; align-items:center; justify-content:center;
-      font-size:110px; position:relative;
-    }
-    .about-hero::after {
-      content:''; position:absolute; bottom:0; left:0; right:0;
-      height:90px; background:linear-gradient(transparent,#000);
-    }
-    .about-back {
-      position:absolute; top:56px; left:16px; z-index:10; width:36px; height:36px;
-      border-radius:50%; background:rgba(0,0,0,0.5);
-      display:flex; align-items:center; justify-content:center; font-size:20px; cursor:pointer;
-    }
-    .about-body { padding:18px 18px 30px; }
-    .about-name { font-size:26px; font-weight:800; margin-bottom:4px; }
-    .about-meta-row { font-size:12px; color:#666; margin-bottom:12px; }
-    .about-tags { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
-    .about-tag { background:#111; color:#C4B5FD; padding:5px 13px; border-radius:20px; font-size:12px; border:1px solid #2A2A2A; }
-    .about-bio { font-size:13px; color:#777; line-height:1.75; margin-bottom:22px; }
-    .section-head { display:flex; align-items:center; gap:8px; font-size:15px; font-weight:800; margin-bottom:12px; }
-    .new-badge { background:#7C3AED; color:#fff; font-size:10px; font-weight:700; padding:2px 8px; border-radius:10px; }
-    .diary-preview-card {
-      background:#0F0F0F; border-radius:14px; padding:14px; margin-bottom:10px;
-      border:1px solid #1E1E1E; cursor:pointer; transition:background 0.15s;
-    }
-    .diary-preview-card:active { background:#161616; }
-    .dp-date { font-size:10px; color:#555; margin-bottom:5px; }
-    .dp-title { font-size:14px; font-weight:700; margin-bottom:5px; color:#ddd; }
-    .dp-text { font-size:12px; color:#666; line-height:1.65; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .dp-footer { display:flex; justify-content:flex-end; margin-top:8px; padding-top:8px; border-top:1px solid #1A1A1A; }
-    .read-link { font-size:11px; color:#7C3AED; font-weight:700; }
-    .see-all-row { text-align:center; padding:12px 0 18px; font-size:13px; color:#7C3AED; font-weight:700; cursor:pointer; }
-    .chat-cta { width:100%; background:#7C3AED; color:#fff; border:none; border-radius:16px; padding:15px; font-size:15px; font-weight:700; cursor:pointer; }
-
-    /* ════════════════════════════════════════
-       DEMO NAV (fixed, outside phone)
-    ════════════════════════════════════════ */
-    .demo-nav {
-      position:fixed; bottom:0; left:50%; transform:translateX(-50%);
-      width:390px; background:rgba(10,0,22,0.97); border-top:1px solid #2a1b4e;
-      padding:8px 12px 10px; z-index:999;
-    }
-    .demo-nav-row { display:flex; gap:5px; margin-bottom:5px; }
-    .demo-nav-row:last-child { margin-bottom:0; }
-    .demo-btn {
-      flex:1; padding:8px 4px; border-radius:10px; background:#1a0a35;
-      border:1px solid #3b1e6e; color:#8B5CF6; font-size:10px; font-weight:700;
-      cursor:pointer; text-align:center; line-height:1.5; transition:all 0.2s;
-    }
-    .demo-btn.active { background:#7C3AED; color:#fff; border-color:#7C3AED; }
-    .demo-btn.small { font-size:9px; padding:6px 4px; }
-    .demo-state-row {
-      display:flex; align-items:center; justify-content:space-between;
-      padding:4px 2px 0; font-size:9px; color:#555;
-    }
-    .skip-indicators { display:flex; gap:3px; align-items:center; }
-    .skip-dot { width:7px; height:7px; border-radius:50%; background:#333; }
-    .skip-dot.used { background:#7C3AED; }
-    .skip-dot.suppressed { background:#ef4444; }
-
-    /* Greet sub-buttons (shown when time greeting active) */
-    .greet-sub { display:none; }
-    .greet-sub.show { display:flex; }
-  </style>
+/* ─ Unread msg row ─ */
+.msg-row.unread .msg-name-lv{font-weight:800;color:#fff}
+.msg-row.unread .msg-preview{color:#bbb}
+.msg-unread-dot{width:9px;height:9px;border-radius:50%;background:#7C3AED;flex-shrink:0;align-self:center;display:none}
+.msg-row.unread .msg-unread-dot{display:block}
+</style>
 </head>
 <body>
-
-<div class="demo-label">STOREEL Interactive — 综合功能 Demo v2.0</div>
-
+<div class="demo-label">STOREEL — Interactive Demo v4</div>
 <div class="phone">
 
-  <!-- ══════════════════════════════════════════
-       PHONE-LEVEL FLOATING BUBBLE
-  ══════════════════════════════════════════ -->
-  <div class="phone-bubble" id="ph-bubble" onclick="bubbleClick()">
-    <div class="pb-avatar" id="pb-avatar">🧍‍♂️</div>
-    <div class="pb-content">
-      <div class="pb-name" id="pb-name">Cassius</div>
-      <div class="pb-preview" id="pb-preview">你一直在看。我注意到了——大多数...</div>
+<!-- EPISODE TRIGGER SHEET -->
+<div class="phone-bubble" id="ph-bubble">
+  <div class="binge-handle"></div>
+  <div class="binge-close" onclick="closeBubble(event)">×</div>
+  <div class="pb-body">
+    <div class="pb-text">
+      <div class="pb-eyebrow"><div class="binge-edot"></div><span id="pb-eyebrow-label">角色触达</span></div>
+      <div class="pb-title">Cassius 想到了你</div>
+      <div class="pb-preview" id="pb-preview">你一直在看。我注意到了——</div>
+      <button class="binge-cta" style="padding:10px 22px;font-size:13px;margin-top:14px" onclick="bubbleClick()">去看看 ›</button>
     </div>
-    <div class="pb-close" onclick="closeBubble(event)">×</div>
+    <div class="pb-char-photo"></div>
   </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       PHONE-LEVEL BINGE SHEET
-  ══════════════════════════════════════════ -->
-  <div class="phone-binge-overlay" id="binge-overlay">
-    <div class="binge-sheet">
-      <div class="binge-handle"></div>
-      <div class="binge-close" onclick="closeBinge()">×</div>
-      <div class="binge-body">
-        <div class="binge-text">
-          <div class="binge-eyebrow">
-            <div class="binge-dot"></div>
-            连续观看 10 集
-          </div>
-          <div class="binge-state">💜 被打动</div>
-          <div class="binge-title">你陪了<br>Cassius 很久了</div>
-          <div class="binge-sub">他有话想对你说——从竞技场开始，到现在。</div>
-          <button class="binge-cta" onclick="bingeGoMsg()">去看看 ›</button>
-        </div>
-        <div class="binge-char-art">🧍‍♂️</div>
+<!-- BINGE SHEET -->
+<div class="phone-binge-overlay" id="binge-overlay">
+  <div class="binge-sheet">
+    <div class="binge-handle"></div>
+    <div class="binge-close" onclick="closeBinge()">×</div>
+    <div class="binge-body">
+      <div class="binge-text">
+        <div class="binge-eyebrow"><div class="binge-edot"></div>连续观看 10 集</div>
+        <div class="binge-title">你陪了<br>Cassius 很久了</div>
+        <div class="binge-sub">他有话想对你说——从竞技场开始，到现在。</div>
+        <button class="binge-cta" onclick="bingeGoMsg()">去看看 ›</button>
       </div>
+      <div class="binge-char-art"></div>
     </div>
   </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 1 · EPISODE PLAYER
-  ══════════════════════════════════════════ -->
-  <div class="screen active" id="s-player">
-    <div class="statusbar"><span id="player-time">9:51</span><span>📶 🔋</span></div>
+<!-- SPLASH -->
+<div class="screen active" id="s-splash">
+  <div class="splash-glow-tr"></div>
+  <div class="splash-logo">STOREEL</div>
+  <div class="splash-sub">Story Reels</div>
+  <div class="splash-home-indicator"></div>
+</div>
 
-    <div class="player-bg">
-      <div class="drama-title-bar">
-        <div class="back-circle" onclick="go('s-msglist')">‹</div>
-        <div class="drama-info">
-          <div class="drama-name">The Violet Arena</div>
-          <div class="ep-info" id="ep-info-bar">第 3 集 / 共 30 集 · STOREEL ORIGINAL</div>
-        </div>
-      </div>
-
-      <div class="player-center">
-        <div class="drama-poster">🏟️</div>
-        <div class="ep-badge" id="ep-badge">第 3 集</div>
-        <div class="ep-title-text" id="ep-title-center">竞技场的规则</div>
-        <div class="trigger-hint">↓ 点击完成集数，体验触发逻辑</div>
-        <button class="trigger-btn" id="trigger-btn" onclick="completeEpisode()">▶ 完成第 3 集</button>
-      </div>
-
-      <div class="progress-area">
-        <div class="progress-bar-bg">
-          <div class="progress-fill" id="progress-fill" style="width:82%"></div>
-        </div>
-        <div class="progress-times">
-          <span id="prog-cur">02:10</span><span>02:38</span>
-        </div>
-      </div>
-
-      <div class="player-controls">
-        <div class="ctrl-btn">⏮</div>
-        <div class="ctrl-btn">⏪</div>
-        <div class="ctrl-play" id="play-btn" onclick="togglePlay()">⏸</div>
-        <div class="ctrl-btn">⏩</div>
-        <div class="ctrl-btn">⏭</div>
-      </div>
-
-      <!-- Episode End Overlay -->
-      <div class="ep-end-overlay" id="ep-end-overlay">
-        <div class="ep-end-label" id="ep-end-label">第 3 集已完成</div>
-        <div class="ep-end-title" id="ep-end-title">竞技场的规则</div>
-        <div class="next-ep-card">
-          <div class="next-ep-thumb">🏟️</div>
-          <div class="next-ep-info">
-            <div class="next-ep-label">下一集</div>
-            <div class="next-ep-name" id="next-ep-name">第 4 集：阴谋初现</div>
+<!-- HOME -->
+<div class="screen" id="s-home">
+  <div class="sb" style="background:#000"><span>4:32</span><span style="display:flex;gap:4px;align-items:center;font-size:11px">📶 WiFi 49%</span></div>
+  <div class="home-search-row">
+    <div class="home-searchbar">
+      <input type="text" placeholder="The Princess With The Cursed Mark" readonly>
+      <span style="font-size:16px;color:#555">🔍</span>
+    </div>
+    <div class="home-search-icons">
+      <div class="home-icon-btn" style="background:#1C1C1E">🎁</div>
+      <div class="home-icon-btn" style="background:#1C1C1E">📱</div>
+    </div>
+  </div>
+  <div class="cat-scroll">
+    <div class="cat-tab active">Popular</div>
+    <div class="cat-tab">Originals</div>
+    <div class="cat-tab">New</div>
+    <div class="cat-tab">Boy's Love</div>
+    <div class="cat-tab">Comeback</div>
+  </div>
+  <div class="home-scroll">
+    <!-- Featured carousel -->
+    <div class="home-featured-area">
+      <div class="featured-wrap" onclick="goInteractive()">
+        <div class="featured-photo-mock">
+          <div style="position:relative;z-index:3;text-align:center">
+            <div style="font-size:11px;color:#C8FF00;font-weight:700;letter-spacing:1px;margin-bottom:6px">S STOREEL</div>
+            <div style="font-family:Georgia,serif;font-size:19px;font-style:italic;color:#F59E0B;text-shadow:0 2px 8px rgba(0,0,0,0.8)">The Billionaire<br>Behind the Meow</div>
           </div>
-          <div class="countdown-circle" id="countdown">5</div>
         </div>
-        <div class="suppressed-label" id="suppressed-label">📵 今日气泡已静默（连续跳过 3 次）</div>
-        <div class="overlay-actions">
-          <button class="skip-bubble-btn" id="skip-btn" onclick="skipBubble()">跳过，下一集 ›</button>
-          <button class="next-ep-btn" onclick="advanceEpisode()" style="display:none" id="watch-now-btn">立即观看</button>
+        <div class="featured-overlay">
+        </div>
+        <div class="featured-actions">
+          <div class="feat-play-btn">▶ Play</div>
+          <div class="feat-add-btn">＋</div>
         </div>
       </div>
     </div>
+    <!-- Top Series -->
+    <div class="section-row"><div class="section-title">Top Series</div></div>
+    <div class="top-series-row">
+      <div class="top-card" onclick="goInteractive()">
+        <div class="top-card-img">
+          <div class="top-card-img-inner" style="background:linear-gradient(160deg,#2d0a0a,#1a0a1a)">🎭</div>
+          <div class="top-rank">1</div>
+        </div>
+        <div class="top-card-title">Mafia Housewife</div>
+      </div>
+      <div class="top-card" onclick="goInteractive()">
+        <div class="top-card-img">
+          <div class="top-card-img-inner" style="background:linear-gradient(160deg,#0a1a2e,#1a2a1a)">💑</div>
+          <div class="top-rank">2</div>
+        </div>
+        <div class="top-card-title">Brother by Chance, Lovers by Choice</div>
+      </div>
+      <div class="top-card" onclick="goInteractive()">
+        <div class="top-card-img">
+          <div class="top-card-img-inner" style="background:linear-gradient(160deg,#1a0a0a,#2a1a0a)">💼</div>
+          <div class="top-rank">3</div>
+        </div>
+        <div class="top-card-title">Steal Me Mafia Fat...</div>
+      </div>
+    </div>
+    <!-- Currently watching -->
+    <div class="watching-strip" onclick="enterPlayer()">
+      <div class="watching-thumb">🏟️</div>
+      <div class="watching-info">
+        <div class="watching-title">OMG! My Snowwhite is a Man</div>
+        <div class="watching-ep">Ep 1/30 Ep</div>
+      </div>
+      <div class="watching-play">▶</div>
+    </div>
+  </div>
+  <div class="home-nav">
+    <div class="home-nav-item active" onclick="go('s-home')">
+      <div class="home-nav-icon" style="color:#4ADE80">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8"/></svg>
+      </div>
+      <span class="home-nav-label" style="color:#4ADE80">Home</span>
+    </div>
+    <div class="home-nav-item" onclick="go('s-verse')">
+      <div class="home-nav-icon" style="color:#555">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="home-nav-label">Verse</span>
+    </div>
+    <div class="home-nav-item" onclick="enterChat('s-swipe')" style="position:relative">
+      <div class="home-nav-icon" style="color:#555;position:relative">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="1.8"/></svg>
+        <div class="inter-nav-dot" id="msg-dot-home" style="top:-2px;right:-4px"></div>
+      </div>
+      <span class="home-nav-label">Chat</span>
+    </div>
+    <div class="home-nav-item" onclick="go('s-profile')">
+      <div class="home-nav-icon" style="color:#555">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="home-nav-label">Profile</span>
+    </div>
+  </div>
+</div>
 
-    <!-- Bottom nav -->
-    <div class="bottom-nav">
-      <div class="nav-item" onclick="go('s-msglist')">
-        <div class="nav-icon">📡</div><span class="nav-label">Feed</span>
+<!-- VERSE -->
+<div class="screen" id="s-verse">
+  <div class="sb"><span>9:49</span><span>📶 WiFi 69%</span></div>
+  <div class="verse-header">
+    <div class="verse-logo">
+      <span class="verse-logo-text">STOREEL</span>
+      <span class="verse-ai-badge">AI</span>
+    </div>
+    <div class="verse-qr-btn">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="#aaa" stroke-width="1.4"/><rect x="11" y="1" width="6" height="6" rx="1" stroke="#aaa" stroke-width="1.4"/><rect x="1" y="11" width="6" height="6" rx="1" stroke="#aaa" stroke-width="1.4"/><rect x="3" y="3" width="2" height="2" fill="#aaa"/><rect x="13" y="3" width="2" height="2" fill="#aaa"/><rect x="3" y="13" width="2" height="2" fill="#aaa"/><rect x="12" y="11" width="2" height="2" fill="#aaa"/><rect x="15" y="11" width="2" height="2" fill="#aaa"/><rect x="12" y="14" width="2" height="2" fill="#aaa"/><rect x="15" y="14" width="2" height="2" fill="#aaa"/></svg>
+    </div>
+  </div>
+  <div class="verse-scroll">
+    <!-- Featured carousel -->
+    <div class="verse-featured-row">
+      <div class="verse-feat-card verse-feat-side" style="background:url('source/IMG_8906.PNG') center top/cover">
+        <div class="verse-feat-overlay"></div>
+        <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.0) 40%,rgba(0,0,0,0.75) 100%)"></div>
+        <div style="position:absolute;bottom:12px;left:12px;right:4px">
+          <div style="font-size:9px;color:#C4B5FD;font-weight:700;letter-spacing:0.8px;margin-bottom:4px">S STOREEL ORIGINAL</div>
+          <div style="font-size:14px;font-weight:800;color:#fff;line-height:1.3">The Violet<br>Arena</div>
+        </div>
       </div>
-      <div class="nav-item" onclick="go('s-swipe')">
-        <div class="nav-icon">🃏</div><span class="nav-label">Swipe</span>
+      <div class="verse-feat-card main" style="background:linear-gradient(160deg,#1a0808,#2a0d10,#0d0818)">
+        <div class="verse-feat-overlay"></div>
+        <!-- couple silhouette mock -->
+        <div style="position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden">
+          <div style="width:220px;height:280px;background:linear-gradient(180deg,transparent,#2a1010 100%);border-radius:50% 50% 0 0;position:relative;display:flex;align-items:center;justify-content:center">
+            <div style="font-size:72px;margin-bottom:20px;filter:drop-shadow(0 0 20px rgba(200,100,80,0.4))">👫</div>
+          </div>
+        </div>
+        <div class="verse-feat-top">
+          <div class="verse-fire-count">🔥 2629</div>
+          <div class="verse-orig-pill">S STOREEL ORIGINAL</div>
+        </div>
+        <div class="verse-feat-title-wrap">
+          <div class="verse-feat-title">Steal Me<br>From You</div>
+          <div class="verse-feat-title-sub">Mafia Father</div>
+        </div>
+        <button class="verse-play-btn">▶ Play</button>
+        <div class="verse-feat-name">Steal Me From Your Mafia Father</div>
       </div>
-      <div class="nav-item" onclick="goMsg()">
-        <div class="nav-icon">💬<div class="nav-dot" id="msg-dot-player"></div></div>
-        <span class="nav-label">Message</span>
+      <div class="verse-feat-card verse-feat-side" style="background:linear-gradient(160deg,#1a1020,#0a0a20)">
+        <div class="verse-feat-overlay"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;opacity:0.3">🏙️</div>
+      </div>
+    </div>
+    <!-- Votes section -->
+    <div class="verse-section-hdr">
+      <div class="verse-hdr-dot"></div>
+      <div class="verse-hdr-text">Your Votes are On!</div>
+    </div>
+    <div class="verse-vote-row">
+      <div class="verse-vote-card" style="background:linear-gradient(160deg,#0f0820,#1a0a2e)">
+        <div class="verse-vote-overlay"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+          <div style="text-align:center">
+            <div style="font-size:42px;filter:drop-shadow(0 0 12px rgba(120,80,200,0.4))">🤵</div>
+          </div>
+        </div>
+        <div class="verse-vote-excl">S STOREEL EXCLUSIVE</div>
+        <div class="verse-vote-title">The Man<br>At The Door</div>
+      </div>
+      <div class="verse-vote-card" style="background:linear-gradient(160deg,#1a0a10,#2a0a1a)">
+        <div class="verse-vote-overlay"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;opacity:0.5">💃</div>
+        <div class="verse-vote-excl">S STOREEL ORIGINAL</div>
+        <div class="verse-vote-title">Dance<br>With Me</div>
+      </div>
+      <div class="verse-vote-card" style="background:linear-gradient(160deg,#0a1220,#0a2030)">
+        <div class="verse-vote-overlay"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:42px;opacity:0.5">🌊</div>
+        <div class="verse-vote-excl">S STOREEL ORIGINAL</div>
+        <div class="verse-vote-title">Ocean<br>Prince</div>
       </div>
     </div>
   </div>
+  <!-- Floating edit button -->
+  <div class="verse-fab">✏️</div>
+  <!-- Home 4-item nav (Verse active) -->
+  <div class="home-nav">
+    <div class="home-nav-item" onclick="go('s-home')">
+      <div class="home-nav-icon" style="color:#555">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8"/></svg>
+      </div>
+      <span class="home-nav-label">Home</span>
+    </div>
+    <div class="home-nav-item active" onclick="go('s-verse')">
+      <div class="home-nav-icon" style="color:#4ADE80;filter:drop-shadow(0 0 6px rgba(74,222,128,0.7))">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="home-nav-label" style="color:#4ADE80">Verse</span>
+    </div>
+    <div class="home-nav-item" onclick="enterChat('s-swipe')" style="position:relative">
+      <div class="home-nav-icon" style="color:#555;position:relative">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="1.8"/></svg>
+        <div class="inter-nav-dot" id="msg-dot-verse"></div>
+      </div>
+      <span class="home-nav-label">Chat</span>
+    </div>
+    <div class="home-nav-item" onclick="go('s-profile')">
+      <div class="home-nav-icon" style="color:#555">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="home-nav-label">Profile</span>
+    </div>
+  </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 2 · MESSAGE LIST
-  ══════════════════════════════════════════ -->
-  <div class="screen" id="s-msglist">
-    <div class="statusbar"><span id="msglist-time">9:52</span><span>📶 🔋</span></div>
-    <div class="page-header">
-      <div class="header-title" style="font-style:italic">STOREEL Interactive</div>
-    </div>
-    <div class="scroll">
-      <!-- Cassius -->
-      <div class="msg-row" onclick="go('s-conv'); setChar('cassius')">
-        <div class="char-avatar av-cassius">🧍‍♂️</div>
-        <div class="msg-info">
-          <div class="msg-top">
-            <span class="msg-name">Cassius <span class="lv-badge">💗💬 Lv.1</span></span>
-            <span class="msg-time" id="cassius-time">刚刚</span>
-          </div>
-          <div class="msg-preview" id="cassius-preview">你一直在看。我注意到了——大多数人到这里就走了。</div>
+<!-- PROFILE -->
+<div class="screen" id="s-profile">
+  <div class="sb"><span>9:49</span><span>📶 WiFi 69%</span></div>
+  <div class="profile-scroll">
+    <!-- Header: avatar + user info + sign-in -->
+    <div class="profile-header">
+      <div class="profile-av-row">
+        <div class="profile-av">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#4ADE80" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#4ADE80" stroke-width="1.8" stroke-linecap="round"/></svg>
         </div>
-        <div class="diary-dot" id="cassius-dot" style="display:none"></div>
+        <div>
+          <div class="profile-username">Visitor_205545893616852...</div>
+          <div class="profile-uid">ID: 205545893616168529920</div>
+        </div>
       </div>
-      <!-- Marcus -->
-      <div class="msg-row" onclick="go('s-conv'); setChar('marcus')">
-        <div class="char-avatar av-marcus">🧑‍🎓</div>
-        <div class="msg-info">
-          <div class="msg-top">
-            <span class="msg-name">Marcus <span class="lv-badge">💗 Lv.1</span></span>
-            <span class="msg-time">05/16 14:20</span>
-          </div>
-          <div class="msg-preview">我不明白为什么我开始注意她……</div>
-        </div>
-        <div class="diary-dot"></div>
+      <div class="profile-header-right">
+        <div class="profile-bonus-badge">100 bonus</div>
+        <button class="profile-signin-btn">Sign in</button>
       </div>
     </div>
-    <div class="bottom-nav">
-      <div class="nav-item" onclick="go('s-msglist')">
-        <div class="nav-icon">📡</div><span class="nav-label">Feed</span>
+    <!-- VIP Banner -->
+    <div class="profile-vip-banner">
+      <div class="profile-vip-label">VIP</div>
+      <div class="profile-vip-inner">
+        <div class="profile-vip-title">STOREEL VIP</div>
+        <div class="profile-vip-sub">Unlock all Series free &amp; No ads</div>
       </div>
-      <div class="nav-item" onclick="go('s-swipe')">
-        <div class="nav-icon">🃏</div><span class="nav-label">Swipe</span>
+      <div class="profile-vip-upgrade">Upgrade ›</div>
+    </div>
+    <!-- Wallet Balance -->
+    <div class="profile-wallet">
+      <div class="profile-wallet-hdr">
+        <div class="profile-wallet-title">Wallet Balance</div>
+        <div class="profile-wallet-detail">Detail ›</div>
       </div>
-      <div class="nav-item active">
-        <div class="nav-icon">💬<div class="nav-dot" id="msg-dot-list"></div></div>
-        <span class="nav-label">Message</span>
+      <div class="profile-wallet-row">
+        <div class="profile-coin-item">
+          <div class="profile-coin-label"><span class="profile-coin-dot" style="background:#f5c518"></span>Coins</div>
+          <div class="profile-coin-val">0</div>
+        </div>
+        <div class="profile-coin-item">
+          <div class="profile-coin-label"><span class="profile-coin-dot" style="background:#4ADE80"></span>Bonus</div>
+          <div class="profile-coin-val">0</div>
+        </div>
+        <button class="profile-topup-btn">Top Up</button>
+      </div>
+    </div>
+    <!-- Menu list -->
+    <div class="profile-menu">
+      <div class="profile-menu-item">
+        <div class="profile-menu-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="2.2" rx="1.1" fill="#aaa"/><rect x="2" y="9" width="16" height="2.2" rx="1.1" fill="#aaa"/><rect x="2" y="14" width="10" height="2.2" rx="1.1" fill="#aaa"/></svg></div>
+        <div class="profile-menu-label">My List</div>
+        <div class="profile-menu-arrow">›</div>
+      </div>
+      <div class="profile-menu-item">
+        <div class="profile-menu-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="5" width="16" height="11" rx="2" stroke="#aaa" stroke-width="1.6"/><path d="M2 8l8 4.5L18 8" stroke="#aaa" stroke-width="1.6"/></svg></div>
+        <div class="profile-menu-label">Inbox</div>
+        <div class="profile-menu-arrow">›</div>
+      </div>
+      <div class="profile-menu-item">
+        <div class="profile-menu-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="2.5" stroke="#aaa" stroke-width="1.6"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.34 4.34l1.42 1.42M14.24 14.24l1.42 1.42M4.34 15.66l1.42-1.42M14.24 5.76l1.42-1.42" stroke="#aaa" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div class="profile-menu-label">Settings</div>
+        <div class="profile-menu-arrow">›</div>
+      </div>
+      <div class="profile-menu-item">
+        <div class="profile-menu-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5.5h14M3 10h14M3 14.5h9" stroke="#aaa" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div class="profile-menu-label">Feedback</div>
+        <div class="profile-menu-arrow">›</div>
+      </div>
+      <div class="profile-menu-item">
+        <div class="profile-menu-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3" stroke="#aaa" stroke-width="1.6"/><path d="M3 18c0-3.3 3.1-5.5 7-5.5s7 2.2 7 5.5" stroke="#aaa" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div class="profile-menu-label">About Us</div>
+        <div class="profile-menu-arrow">›</div>
       </div>
     </div>
   </div>
+  <!-- Home 4-item nav (Profile active) -->
+  <div class="home-nav">
+    <div class="home-nav-item" onclick="go('s-home')">
+      <div class="home-nav-icon" style="color:#555">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z" stroke="currentColor" stroke-width="1.8" fill="none"/><path d="M9 21V12h6v9" stroke="currentColor" stroke-width="1.8"/></svg>
+      </div>
+      <span class="home-nav-label">Home</span>
+    </div>
+    <div class="home-nav-item" onclick="go('s-verse')">
+      <div class="home-nav-icon" style="color:#555">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="home-nav-label">Verse</span>
+    </div>
+    <div class="home-nav-item" onclick="enterChat('s-swipe')" style="position:relative">
+      <div class="home-nav-icon" style="color:#555;position:relative">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" stroke="currentColor" stroke-width="1.8"/></svg>
+        <div class="inter-nav-dot" id="msg-dot-profile"></div>
+      </div>
+      <span class="home-nav-label">Chat</span>
+    </div>
+    <div class="home-nav-item" onclick="go('s-profile')" style="position:relative">
+      <div class="home-nav-icon" style="color:#4ADE80;filter:drop-shadow(0 0 6px rgba(74,222,128,0.7))">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <span class="home-nav-label" style="color:#4ADE80">Profile</span>
+    </div>
+  </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 3 · CONVERSATION (Chat + 日记)
-  ══════════════════════════════════════════ -->
-  <div class="screen" id="s-conv">
-    <div class="statusbar"><span>9:53</span><span>📶 🔋</span></div>
-    <div class="conv-header">
-      <div class="back-btn" onclick="go('s-msglist')">‹</div>
-      <div class="conv-av av-cassius" id="conv-av">🧍‍♂️</div>
+<!-- FEED -->
+<div class="screen" id="s-feed">
+  <div class="sb"><span>9:32</span><span>📶 WiFi 28%</span></div>
+  <div class="inter-header">
+    <span class="inter-back" onclick="goBack()">‹</span>
+    <div class="inter-title">STOREEL Interactive</div>
+  </div>
+  <div class="feed-char-row">
+    <div class="feed-char-av" style="background:url('source/Swipe.PNG') center 5%/cover"></div>
+    <div class="feed-char-info">
+      <div class="feed-char-name">Arthur</div>
+      <div class="feed-char-meta">Age 30  188cm  Sagittarius</div>
+    </div>
+    <button class="feed-chat-btn" onclick="go('s-conv');setChar('cassius')">Chat!</button>
+  </div>
+  <div class="scroll">
+    <div class="feed-post-img" style="position:relative;min-height:330px;flex:none;overflow:hidden">
+      <div style="position:absolute;inset:0;background:url('source/Feed.PNG') center 33%/100% auto no-repeat"></div>
+      <div style="position:absolute;top:0;left:0;right:0;height:22px;background:linear-gradient(#000,transparent);pointer-events:none"></div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:18px;background:linear-gradient(transparent,#000);pointer-events:none"></div>
+    </div>
+    <div class="feed-caption-area">
+      <div class="feed-caption">Everyone holds a moon that belongs only to them.</div>
+      <div class="feed-date">October 20</div>
+      <div class="feed-actions">
+        <div class="feed-likes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" stroke="currentColor" stroke-width="1.8"/></svg> <span>435</span></div>
+        <div class="feed-bookmark"><svg width="18" height="20" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z" stroke="currentColor" stroke-width="1.8"/></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="inter-nav">
+    <div class="inter-nav-item active" onclick="go('s-feed')">
+      <div class="inter-nav-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <span class="inter-nav-label">Feed</span>
+    </div>
+    <div class="inter-nav-item" onclick="go('s-swipe')">
+      <div class="inter-nav-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="5" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6" transform="rotate(-8 4 5)"/><rect x="5" y="3" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <span class="inter-nav-label">Swipe</span>
+    </div>
+    <div class="inter-nav-item" onclick="goMsg()" style="position:relative">
+      <div class="inter-nav-icon" style="position:relative"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M18 13a2 2 0 01-2 2H6l-3 3V4a2 2 0 012-2h11a2 2 0 012 2v9z" stroke="currentColor" stroke-width="1.6"/></svg><div class="inter-nav-dot" id="msg-dot-feed"></div></div>
+      <span class="inter-nav-label">Message</span>
+    </div>
+  </div>
+</div>
+
+<!-- SWIPE -->
+<div class="screen" id="s-swipe">
+  <div class="sb" style="background:#6B21A8"><span>9:32</span><span>📶 WiFi 28%</span></div>
+  <div class="swipe-header-area">
+    <span class="swipe-back" onclick="goBack()">‹</span>
+    <div class="swipe-title">STOREEL Interactive</div>
+  </div>
+  <div class="swipe-card-area">
+    <div class="swipe-card">
+      <div class="swipe-card-overlay"></div>
+      <button class="swipe-about-btn" onclick="go('s-about')">About Him &gt;&gt;&gt;</button>
+      <div class="swipe-play-btn" onclick="enterPlayer()">▶</div>
+      <div class="swipe-card-info">
+        <div class="swipe-drama-title">The Violet Arena<br>Under the Nocturne</div>
+        <div class="swipe-char-name">Cassius</div>
+        <div class="swipe-stats">Age 27  189cm  Virgo</div>
+        <div class="swipe-tags">
+          <span class="swipe-tag">Protective</span>
+          <span class="swipe-tag">Noble</span>
+          <span class="swipe-tag">Restrained</span>
+        </div>
+      </div>
+    </div>
+    <div class="swipe-action-row">
+      <button class="swipe-chat-btn" onclick="go('s-conv');setChar('cassius')">Chat!</button>
+    </div>
+  </div>
+  <div class="swipe-nav">
+    <div class="swipe-nav-item" onclick="go('s-feed')">
+      <div class="swipe-nav-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <span class="swipe-nav-label">Feed</span>
+    </div>
+    <div class="swipe-nav-item active" onclick="go('s-swipe')">
+      <div class="swipe-nav-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="5" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6" transform="rotate(-8 4 5)"/><rect x="5" y="3" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <span class="swipe-nav-label">Swipe</span>
+    </div>
+    <div class="swipe-nav-item" onclick="goMsg()" style="position:relative">
+      <div class="swipe-nav-icon" style="position:relative"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M18 13a2 2 0 01-2 2H6l-3 3V4a2 2 0 012-2h11a2 2 0 012 2v9z" stroke="currentColor" stroke-width="1.6"/></svg><div class="inter-nav-dot" id="msg-dot-swipe"></div></div>
+      <span class="swipe-nav-label">Message</span>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT HIM -->
+<div class="screen" id="s-about">
+  <div class="sb"><span>9:32</span><span>📶 WiFi 28%</span></div>
+  <div class="about-top-back"><span onclick="go('s-swipe')">‹</span></div>
+  <div class="about-char-row">
+    <div class="about-av"></div>
+    <div class="about-char-info">
+      <div class="about-char-name">Cassius</div>
+      <div class="about-char-meta">Age 27  189cm  Virgo</div>
+    </div>
+    <button class="about-chat-btn" onclick="go('s-conv');setChar('cassius')">Chat!</button>
+  </div>
+  <div class="about-tags">
+    <span class="about-tag">Protective</span>
+    <span class="about-tag">Noble</span>
+    <span class="about-tag">Restrained</span>
+  </div>
+  <div class="scroll">
+    <div class="about-bio">Cassius is a Roman nobleman — cold, elegant, and untouchable at first glance. He keeps every emotion hidden beneath silence, control, and effortless authority. But beneath that calm exterior are deep wounds. Trapped for years beneath the power of both his father and the Emperor, the more pain he carries, the more fiercely he clings to dignity and control. At first, his feelings for Leon are protective. Over time, they become something more dangerous: restrained love, possessiveness, and dependence — emotions he refuses to name too openly.</div>
+    <!-- 日记区域 -->
+    <div style="padding:0 14px 8px;display:flex;align-items:center;justify-content:space-between">
+      <div class="diary-personal-tag">✨ 专属于你的视角</div>
+      <span style="font-size:11px;color:#555;cursor:pointer" onclick="go('s-conv');setChar('cassius');switchTab('diary')">查看全部 →</span>
+    </div>
+    <div id="about-diary-container" style="padding:0 14px"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 14px 16px">
+      <button id="about-diary-prev" onclick="aboutDiaryPage(-1)" style="background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:16px;padding:7px 14px;font-size:12px;cursor:pointer">← 更早</button>
+      <span id="about-diary-info" style="font-size:10px;color:#444"></span>
+      <button id="about-diary-next" onclick="aboutDiaryPage(1)" style="background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:16px;padding:7px 14px;font-size:12px;cursor:pointer">更近 →</button>
+    </div>
+    <div class="storeel-orig">
+      <div class="storeel-orig-s">S</div>
+      STOREEL ORIGINAL
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGE LIST -->
+<div class="screen" id="s-msglist">
+  <div class="sb"><span>9:32</span><span>📶 WiFi 28%</span></div>
+  <div class="inter-header">
+    <span class="inter-back" onclick="goBack()">‹</span>
+    <div class="inter-title">STOREEL Interactive</div>
+  </div>
+  <div class="msg-list-scroll">
+    <div class="msg-row" id="cassius-msg-row" onclick="openCassiusMsg()">
+      <div class="msg-av"><div class="msg-av-single"></div></div>
+      <div class="msg-info">
+        <div class="msg-top-row">
+          <div class="msg-name-lv">Cassius <span class="msg-lv-badge">💗Lv.0</span></div>
+          <div class="msg-time" id="cassius-time">05/18 21:05</div>
+        </div>
+        <div class="msg-preview" id="cassius-preview">(You closed your eyes for...</div>
+      </div>
+      <div class="msg-unread-dot" id="cassius-unread-dot"></div>
+    </div>
+    <div class="msg-row" onclick="go('s-conv');setChar('marcus')">
+      <div class="msg-av">
+        <div class="msg-av-double">
+          <div class="msg-av-d1"></div>
+          <div class="msg-av-d2"></div>
+        </div>
+      </div>
+      <div class="msg-info">
+        <div class="msg-top-row">
+          <div class="msg-name-lv">Purple Wax Secret <span class="msg-lv-badge">💗Lv.0</span></div>
+          <div class="msg-time">05/18 21:04</div>
+        </div>
+        <div class="msg-preview">Cassius's private salon aft...</div>
+      </div>
+    </div>
+  </div>
+  <div class="inter-nav">
+    <div class="inter-nav-item" onclick="go('s-feed')">
+      <div class="inter-nav-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="2" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="2" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/><rect x="11" y="11" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <span class="inter-nav-label">Feed</span>
+    </div>
+    <div class="inter-nav-item" onclick="go('s-swipe')">
+      <div class="inter-nav-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="4" y="5" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6" transform="rotate(-8 4 5)"/><rect x="5" y="3" width="11" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <span class="inter-nav-label">Swipe</span>
+    </div>
+    <div class="inter-nav-item active" onclick="goMsg()" style="position:relative">
+      <div class="inter-nav-icon" style="position:relative"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M18 13a2 2 0 01-2 2H6l-3 3V4a2 2 0 012-2h11a2 2 0 012 2v9z" stroke="currentColor" stroke-width="1.6"/></svg><div class="inter-nav-dot" id="msg-dot-list"></div></div>
+      <span class="inter-nav-label">Message</span>
+    </div>
+  </div>
+</div>
+
+<!-- CONVERSATION -->
+<div class="screen" id="s-conv">
+  <div class="conv-bg"></div>
+  <div class="conv-bg-overlay"></div>
+  <div class="conv-sb"><span>4:29</span><span>📶 WiFi 50%</span></div>
+  <div class="conv-header">
+    <div class="conv-char-left" onclick="go('s-msglist')">
+      <span style="font-size:22px;color:rgba(255,255,255,0.85);margin-right:2px;line-height:1">‹</span>
+      <div class="conv-char-av"></div>
       <div>
-        <div class="conv-name" id="conv-name">Cassius</div>
-        <div class="conv-sub" id="conv-sub">💗💬 Lv.1 · The Violet Arena</div>
+        <div class="conv-char-name" id="conv-char-name">Cassius</div>
+        <div class="conv-char-lv">💗 Lv.0 ▶</div>
       </div>
     </div>
-
-    <div class="tabs-bar">
-      <div class="tab active" id="tab-chat" onclick="switchTab('chat')">Chat</div>
-      <div class="tab" id="tab-diary" onclick="switchTab('diary')">📖 日记</div>
-    </div>
-
-    <!-- Chat Panel -->
-    <div class="scroll" id="panel-chat">
-      <div class="bubbles">
-        <!-- Regular chat history -->
-        <div class="bubble-wrap">
-          <div class="bubble-sender" id="chat-sender">Cassius</div>
-          <div class="chat-bubble char">(leans back in his chair) They say everyone has a price. Tell me... what's yours?</div>
+    <div class="conv-gems">+ <span class="conv-heart-icon">♥</span> <span id="gem-count">99</span></div>
+  </div>
+  <div class="spark-banner hidden" id="spark-banner">Spark level has reached Lv.1 &gt;&gt;&gt;</div>
+  <div class="conv-tabs">
+    <div class="conv-tab active" id="tab-chat" onclick="switchTab('chat')">Chat</div>
+    <div class="conv-tab" id="tab-diary" onclick="switchTab('diary')">📖 日记</div>
+  </div>
+  <!-- Chat panel -->
+  <div id="panel-chat">
+    <div id="bubbles-container" style="display:flex;flex-direction:column;padding-bottom:4px">
+      <!-- Initial messages -->
+      <div class="char-msg-group b-anim">
+        <div class="char-name-row">
+          <div class="char-bubble-av"></div>
+          <div class="char-name-pill" id="char-badge-1">Cassius</div>
         </div>
-        <div class="bubble-wrap me">
-          <div class="chat-bubble me">I don't have one. Some things aren't for sale.</div>
-        </div>
-        <div class="bubble-wrap">
-          <div class="bubble-sender" id="chat-sender2">Cassius</div>
-          <div class="chat-bubble char">*a slow smile* Interesting. You're the first person in a long time who's made me curious enough to wait.</div>
-        </div>
-
-        <!-- REDESIGNED Proactive Message Card -->
-        <div class="proactive-card" id="proactive-card" style="margin-top:16px">
-          <div class="proactive-inner">
-            <div class="proactive-label">
-              <div class="p-dot"></div>
-              <span id="proactive-label-text">Cassius 刚刚想到了你</span>
-            </div>
-            <div class="proactive-header">
-              <div class="proactive-avatar" id="proactive-avatar">🧍‍♂️</div>
-              <div class="proactive-meta">
-                <div class="proactive-name" id="proactive-char-name">Cassius</div>
-                <div class="proactive-state" id="proactive-state">💭 若有所思</div>
-              </div>
-            </div>
-            <div class="proactive-message" id="proactive-message">
-              你一直在看。我注意到了——大多数人到这里就走了。
-            </div>
-            <div class="proactive-footer">
-              <span class="proactive-phase" id="proactive-phase">破冰触发 · 第3集后</span>
-              <span class="proactive-time" id="proactive-time">09:35</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- IAP hook (shown on climax / sprint triggers) -->
-        <div class="iap-hook" id="iap-hook" style="display:none">
-          <div class="iap-label" id="iap-label">🔒 角色视角解锁</div>
-          <div class="iap-text" id="iap-text">Cassius 在竞技场背后经历了什么，只有你能知道。</div>
-          <button class="iap-btn">解锁角色视角 · 6 coins</button>
-        </div>
-
-        <!-- User reply -->
-        <div class="bubble-wrap me" style="margin-top:12px">
-          <div class="chat-bubble me">因为我想知道接下来发生什么。</div>
-        </div>
-        <div class="bubble-wrap">
-          <div class="bubble-sender" id="chat-sender3">Cassius</div>
-          <div class="chat-bubble char">*沉默了一会儿* 你在看过程，不是结果。这让我觉得……你和别人不一样。</div>
+        <div class="char-bubble">(leans back in his chair) They say everyone has a price. Tell me... what's yours?</div>
+      </div>
+      <div class="user-msg-group b-anim">
+        <div class="user-bubble">I don't have one. Some things aren't for sale.</div>
+        <div class="user-meta-row">
+          <div class="user-plus1">+1</div>
+          <div class="user-visitor-id" id="visitor-id">Visitor_20554589363168529920</div>
+          <div class="user-av-circle">V</div>
         </div>
       </div>
-    </div>
-
-    <div class="chat-input-bar" id="chat-input">
-      <input type="text" placeholder="回复 Cassius...">
-      <div class="send-btn">➤</div>
-    </div>
-
-    <!-- Diary Panel -->
-    <div class="scroll" id="panel-diary" style="display:none">
-      <div class="diary-wrap">
-        <div class="personal-tag">✨ 专属于你的视角</div>
-
-        <!-- Entry 1 unlocked -->
-        <div class="diary-card">
-          <div class="diary-card-header">
-            <span class="diary-card-date">📖 May 16</span>
-            <span class="new-tag">● 最新</span>
+      <div class="char-msg-group b-anim">
+        <div class="char-name-row">
+          <div class="char-bubble-av"></div>
+          <div class="char-name-pill" id="char-badge-2">Cassius</div>
+        </div>
+        <div class="char-bubble">(leans back in his chair) That is understandable. Sometimes clarity takes time. What weighs on your mind most right now?</div>
+      </div>
+      <!-- Proactive card -->
+      <div class="proactive-card" id="proactive-card">
+        <div class="pc-inner">
+          <div class="pc-label"><div class="pc-dot"></div><span id="pc-label-text">Cassius 刚刚想到了你</span></div>
+          <div class="pc-header">
+            <div class="pc-avatar"></div>
+            <div class="pc-meta">
+              <div class="pc-name" id="pc-char-name">Cassius</div>
+              <div class="pc-state" id="pc-state">💭 若有所思</div>
+            </div>
           </div>
-          <div class="diary-card-title" id="diary-title-1">她说她没有价码</div>
-          <div class="diary-card-body" id="diary-body-1">
-            今天在竞技场外，我遇见了她。我问她有没有价码——我问每个人都问这句话，因为答案从来都是一样的。<br><br>
-            但<em> 她说：没有。说完还让我继续看。</em><br><br>
-            我不知道为什么我信了。我在这个地方见惯了谎言，但她让我不确定自己的判断。
-          </div>
-          <div class="diary-card-footer">
-            <span class="diary-mood">心情：🌑 难以平静</span>
-            <span class="diary-bookmark">🤍 收藏</span>
+          <div class="pc-msg" id="pc-msg">你一直在看。我注意到了——大多数人到这里就走了。</div>
+          <div class="pc-footer">
+            <span id="pc-phase">破冰触发 · 第3集后</span>
+            <span id="pc-time">09:35</span>
           </div>
         </div>
-
-        <!-- Entry 2 unlocked -->
-        <div class="diary-card">
-          <div class="diary-card-header">
-            <span class="diary-card-date">📖 May 14</span>
-          </div>
-          <div class="diary-card-title" id="diary-title-2">竞技场的规则</div>
-          <div class="diary-card-body" id="diary-body-2">
-            赢不是终点，让对方永远记住你才是。我从十四岁开始就明白这件事。但今晚站在台上，我脑子里出现了一个问题：如果有人不在乎输赢，她在乎什么？
-          </div>
-          <div class="diary-card-footer">
-            <span class="diary-mood">心情：⚔️ 专注</span>
-            <span class="diary-bookmark">🤍 收藏</span>
-          </div>
+      </div>
+      <div class="iap-hook" id="iap-hook" style="display:none">
+        <div class="iap-label" id="iap-label">🔒 角色视角解锁</div>
+        <div class="iap-text" id="iap-text">Cassius 在竞技场背后经历了什么，只有你能知道。</div>
+        <button class="iap-btn">解锁角色视角 · 6 coins</button>
+      </div>
+      <div class="user-msg-group b-anim">
+        <div class="user-bubble">I have no idea</div>
+        <div class="user-meta-row">
+          <div class="user-plus1">+1</div>
+          <div class="user-visitor-id">Visitor_20554589363168529920</div>
+          <div class="user-av-circle">V</div>
         </div>
-
-        <!-- Entry 3 locked -->
-        <div class="diary-card">
-          <div class="diary-card-header">
-            <span class="diary-card-date">📖 May 10</span>
-          </div>
-          <div class="diary-card-title">关于她进场那一刻</div>
-          <div class="diary-card-body">我以为我不会注意到任何新来的人。但那天她走进来的时候……</div>
-          <div class="lock-overlay">
-            <div class="lock-icon">🔒</div>
-            <div class="lock-hint">升级到 Lv.2 解锁</div>
-            <button class="unlock-btn">继续与 Cassius 聊天</button>
-          </div>
+      </div>
+      <div class="char-msg-group b-anim">
+        <div class="char-name-row">
+          <div class="char-bubble-av"></div>
+          <div class="char-name-pill">Cassius</div>
+        </div>
+        <div class="char-bubble">(voice softening) You need not be strong right now. Not here. Tell me, what burdens have left you weary?</div>
+      </div>
+      <!-- Typing indicator (no name-row: 连续消息不重复显示角色名) -->
+      <div class="typing-group" id="typing-indicator">
+        <div class="typing-bubble-wrap">
+          <div class="tdot"></div><div class="tdot"></div><div class="tdot"></div>
         </div>
       </div>
     </div>
   </div>
+  <!-- Input bar -->
+  <div class="conv-input-wrap" id="chat-input-bar">
+    <div class="conv-action-row">
+      <span class="conv-action-btn">⊞</span>
+      <span class="conv-action-btn">→</span>
+    </div>
+    <div class="conv-input-row">
+      <div class="conv-input-left-icon">💬</div>
+      <input class="conv-input-field" id="chat-input-field" type="text" placeholder="Chat freely now!" oninput="onInputChange(this)" onkeydown="onInputKeydown(event)">
+      <div class="conv-input-right-icon">💡</div>
+      <div class="conv-send-btn" id="send-btn" onclick="sendMessage()">↑</div>
+    </div>
+  </div>
+  <!-- Diary panel -->
+  <div id="panel-diary" style="display:none">
+    <div class="diary-personal-tag">✨ 专属于你的视角</div>
+    <div id="diary-entries-container"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px">
+      <button id="diary-prev-btn" onclick="diaryPage(-1)" style="background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:16px;padding:7px 14px;font-size:12px;cursor:pointer">← 更早</button>
+      <span id="diary-page-info" style="font-size:10px;color:#444"></span>
+      <button id="diary-next-btn" onclick="diaryPage(1)" style="background:transparent;border:1px solid #2a2a2a;color:#666;border-radius:16px;padding:7px 14px;font-size:12px;cursor:pointer">更近 →</button>
+    </div>
+  </div>
+</div>
 
-  <!-- ══════════════════════════════════════════
-       SCREEN 4 · SWIPE
-  ══════════════════════════════════════════ -->
-  <div class="screen swipe-bg" id="s-swipe">
-    <div class="statusbar" style="background:#4C1D95"><span>9:49</span><span>📶 🔋</span></div>
-    <div class="page-header" style="background:#4C1D95">
-      <div class="header-title" style="font-style:italic">STOREEL Interactive</div>
+<!-- EPISODE PLAYER -->
+<div class="screen" id="s-player">
+  <div class="sb"><span id="player-time">9:51</span><span>📶 WiFi</span></div>
+  <div class="player-bg">
+    <div class="drama-title-bar">
+      <div class="back-circle" onclick="goPlayerBack()">‹</div>
+      <div class="drama-info">
+        <div class="drama-name">The Violet Arena</div>
+        <div class="ep-info" id="ep-info-bar">第 3 集 / 共 30 集 · STOREEL ORIGINAL</div>
+      </div>
     </div>
-    <div class="swipe-inner">
-      <div class="swipe-card-outer">
-        <div class="swipe-char-img">🧑‍🎓</div>
-        <button class="about-btn" onclick="go('s-about')">About Him ›</button>
-        <div class="play-circle">▶</div>
-        <div class="swipe-card-info">
-          <div class="swipe-drama-label">OMG! My Snow White is a Man!</div>
-          <div class="swipe-char-name">Marcus</div>
-          <div class="swipe-char-meta">Age 17 · 188cm · Leo</div>
-          <div class="swipe-tags">
-            <span class="swipe-tag">Strong</span>
-            <span class="swipe-tag">Devoted</span>
-            <span class="swipe-tag">Spoiling</span>
-          </div>
+    <div class="player-center">
+      <div class="drama-poster">🏟️</div>
+      <div class="ep-badge" id="ep-badge">第 3 集</div>
+      <div class="ep-title-text" id="ep-title-center">竞技场的规则</div>
+      <div class="trigger-hint">↓ 点击完成集数，体验触发逻辑</div>
+      <button class="trigger-btn" id="trigger-btn" onclick="completeEpisode()">▶ 完成第 3 集</button>
+    </div>
+    <div class="progress-area">
+      <div class="prog-bar-bg"><div class="prog-fill" id="progress-fill" style="width:82%"></div></div>
+      <div class="prog-times"><span id="prog-cur">02:10</span><span>02:38</span></div>
+    </div>
+    <div class="player-controls">
+      <div class="ctrl-btn">⏮</div><div class="ctrl-btn">⏪</div>
+      <div class="ctrl-play" id="play-btn" onclick="togglePlay()">⏸</div>
+      <div class="ctrl-btn">⏩</div><div class="ctrl-btn">⏭</div>
+    </div>
+    <div class="ep-end-overlay" id="ep-end-overlay">
+      <div class="ep-end-label" id="ep-end-label">第 3 集已完成</div>
+      <div class="ep-end-title" id="ep-end-title">竞技场的规则</div>
+      <div class="next-ep-card">
+        <div class="next-ep-thumb">🏟️</div>
+        <div class="next-ep-info">
+          <div class="next-ep-label">下一集</div>
+          <div class="next-ep-name" id="next-ep-name">第 4 集：阴谋初现</div>
         </div>
+        <div class="countdown-circle" id="countdown">5</div>
       </div>
-      <div class="swipe-actions">
-        <button class="chat-btn-green" onclick="go('s-conv'); setChar('marcus')">Chat!</button>
-      </div>
-    </div>
-    <div class="bottom-nav" style="background:#000">
-      <div class="nav-item" onclick="go('s-msglist')">
-        <div class="nav-icon">📡</div><span class="nav-label">Feed</span>
-      </div>
-      <div class="nav-item active">
-        <div class="nav-icon">🃏</div><span class="nav-label">Swipe</span>
-      </div>
-      <div class="nav-item" onclick="goMsg()">
-        <div class="nav-icon">💬<div class="nav-dot" id="msg-dot-swipe"></div></div>
-        <span class="nav-label">Message</span>
+      <div class="suppressed-label" id="suppressed-label">📵 今日气泡已静默（连续跳过 3 次）</div>
+      <div class="overlay-actions">
+        <button class="skip-bubble-btn" onclick="skipBubble()">跳过，下一集 ›</button>
+        <button class="next-ep-btn" onclick="advanceEpisode()" id="watch-now-btn">立即观看</button>
       </div>
     </div>
   </div>
-
-  <!-- ══════════════════════════════════════════
-       SCREEN 5 · ABOUT HIM
-  ══════════════════════════════════════════ -->
-  <div class="screen" id="s-about">
-    <div class="about-hero">
-      🧑‍🎓
-      <div class="about-back" onclick="go('s-swipe')">‹</div>
+  <div class="player-inter-nav">
+    <div class="inter-nav-item" onclick="go('s-feed')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+      <div class="inter-nav-icon">⊞</div><span class="inter-nav-label">Feed</span>
     </div>
-    <div class="scroll">
-      <div class="about-body">
-        <div class="about-name">Marcus</div>
-        <div class="about-meta-row">Age 17 · 188cm · Leo · OMG! My Snow White is a Man!</div>
-        <div class="about-tags">
-          <span class="about-tag">Strong</span>
-          <span class="about-tag">Devoted</span>
-          <span class="about-tag">Spoiling</span>
-        </div>
-        <div class="about-bio">
-          Heir to one of the most powerful families in the city, Marcus has never had to fight for anything — until now. Behind the cold exterior is someone who has only ever known loneliness dressed as power.
-        </div>
-        <div class="section-head">📖 Marcus 的日记 <span class="new-badge">NEW</span></div>
-        <div class="diary-preview-card" onclick="go('s-conv'); setChar('marcus'); switchTab('diary')">
-          <div class="dp-date">May 15 · 最新一篇</div>
-          <div class="dp-title">我不明白为什么我开始注意她</div>
-          <div class="dp-text">学校里从来没有人让我觉得需要解释自己。但今天她就那样站在走廊里看着我，没有畏惧，没有讨好……</div>
-          <div class="dp-footer"><span class="read-link">阅读全文 ›</span></div>
-        </div>
-        <div class="diary-preview-card" onclick="go('s-conv'); setChar('marcus'); switchTab('diary')">
-          <div class="dp-date">May 12</div>
-          <div class="dp-title">关于那场篮球比赛</div>
-          <div class="dp-text">赢了比赛，但我记住的不是分数，而是场边有人在安静地看着我……不是在看表演，是在看我这个人。</div>
-          <div class="dp-footer"><span class="read-link">阅读全文 ›</span></div>
-        </div>
-        <div class="see-all-row" onclick="go('s-conv'); setChar('marcus'); switchTab('diary')">查看 Marcus 的全部日记 ›</div>
-        <button class="chat-cta" onclick="go('s-conv'); setChar('marcus')">Chat with Marcus!</button>
-      </div>
+    <div class="inter-nav-item" onclick="go('s-swipe')" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+      <div class="inter-nav-icon">🃏</div><span class="inter-nav-label">Swipe</span>
+    </div>
+    <div class="inter-nav-item" onclick="goMsg()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+      <div class="inter-nav-icon">💬<div class="inter-nav-dot" id="msg-dot-player"></div></div><span class="inter-nav-label">Message</span>
     </div>
   </div>
+</div>
 
 </div><!-- /phone -->
 
-<!-- ══════════════════════════════════════════
-     DEMO NAV (fixed outside phone)
-══════════════════════════════════════════ -->
+<!-- DEMO NAV -->
 <div class="demo-nav">
-  <!-- Row 1: Scenario selector -->
   <div class="demo-nav-row">
     <div class="demo-btn active" id="dn-progress" onclick="demoSelect('progress')">📺 进度触发<br>集末气泡</div>
-    <div class="demo-btn" id="dn-time"     onclick="demoSelect('time')">⏰ 时间问候<br>早安/晚安</div>
-    <div class="demo-btn" id="dn-diary"    onclick="demoSelect('diary')">💬 对话/日记<br>Message</div>
-    <div class="demo-btn" id="dn-about"    onclick="demoSelect('about')">👤 关于他<br>日记入口</div>
+    <div class="demo-btn" id="dn-time" onclick="demoSelect('time')">⏰ 时间问候<br>早安/晚安</div>
+    <div class="demo-btn" id="dn-diary" onclick="demoSelect('diary')">💬 对话日记<br>发消息试试</div>
+    <div class="demo-btn" id="dn-about" onclick="demoSelect('about')">👤 关于他<br>Swipe卡</div>
   </div>
-
-  <!-- Row 2a: Progress sub-controls -->
   <div class="demo-nav-row" id="sub-progress">
-    <div class="demo-btn small" onclick="jumpToNextTrigger()">⚡ 跳到下一触发节点</div>
-    <div class="demo-btn small" onclick="demoBinge()">🔥 连续观看弹窗</div>
-    <div class="demo-btn small" onclick="resetAll()">🔄 重置状态</div>
+    <div class="demo-btn sm" onclick="jumpToNextTrigger()">⚡ 跳到下一触发</div>
+    <div class="demo-btn sm" onclick="demoBinge()">🔥 连续观看弹窗</div>
+    <div class="demo-btn sm" onclick="resetAll()">🔄 重置状态</div>
   </div>
-
-  <!-- Row 2b: Time greeting sub-controls -->
   <div class="demo-nav-row greet-sub" id="sub-time">
-    <div class="demo-btn small" onclick="showGreeting('morning')">🌅 早安</div>
-    <div class="demo-btn small" onclick="showGreeting('noon')">☀️ 午安</div>
-    <div class="demo-btn small" onclick="showGreeting('evening')">🌙 晚安</div>
-    <div class="demo-btn small" onclick="showGreeting('miss')">💜 想你了</div>
-    <div class="demo-btn small" onclick="showGreeting('checkin')">💬 在干嘛</div>
+    <div class="demo-btn sm" onclick="showGreeting('morning')">🌅 早安</div>
+    <div class="demo-btn sm" onclick="showGreeting('noon')">☀️ 午安</div>
+    <div class="demo-btn sm" onclick="showGreeting('evening')">🌙 晚安</div>
+    <div class="demo-btn sm" onclick="showGreeting('miss')">💜 想你了</div>
+    <div class="demo-btn sm" onclick="showGreeting('checkin')">💬 在干嘛</div>
   </div>
-
-  <!-- State info -->
   <div class="demo-state-row" id="state-row">
     <span id="state-ep-label">当前第 3 集 / 30</span>
-    <span style="display:flex;align-items:center;gap:5px;">
-      气泡跳过：
-      <span class="skip-indicators">
-        <span class="skip-dot" id="sd0"></span>
-        <span class="skip-dot" id="sd1"></span>
-        <span class="skip-dot" id="sd2"></span>
-      </span>
+    <span style="display:flex;align-items:center;gap:5px">气泡跳过：
+      <span class="skip-dots"><span class="sdot" id="sd0"></span><span class="sdot" id="sd1"></span><span class="sdot" id="sd2"></span></span>
       <span id="state-suppress" style="color:#ef4444;display:none">已静默</span>
     </span>
   </div>
 </div>
 
 <script>
-/* ══════════════════════════════════════
-   DATA
-══════════════════════════════════════ */
-const EPISODES = {
-  1:'命运的竞技场', 2:'第一次交锋', 3:'竞技场的规则',
-  4:'阴谋初现', 5:'危险的联盟', 6:'背叛',
-  7:'真相的代价', 8:'绝境', 9:'深渊边缘',
-  10:'逃离', 11:'秘密协议', 12:'代价',
-  13:'裂痕', 14:'黑暗中的光', 15:'转折点',
-  16:'最后的棋子', 17:'暴风前夕', 18:'风暴之眼',
-  19:'代价与救赎', 20:'无退路', 21:'重生',
-  22:'颠覆', 23:'最后的盟友', 24:'背水一战',
-  25:'最后的抉择', 26:'决战前夜', 27:'黎明与黑夜',
-  28:'最后的审判', 29:'结局之前', 30:'终局'
+/* ── DIARY DATA ── */
+const DIARY_DATA = {
+  cassius:[
+    {date:'May 16',isNew:true,title:'她说她没有价码',body:'今天在竞技场外，我遇见了她。我问她有没有价码——我问每个人都问这句话，因为答案从来都是一样的。\n\n但 <em>她说：没有。说完还让我继续看。</em>\n\n我不知道为什么我信了。',mood:'🌑 难以平静',locked:false},
+    {date:'May 14',title:'竞技场的规则',body:'赢不是终点，让对方永远记住你才是。\n\n<em>如果有人不在乎输赢，那她在乎什么？</em>\n\n我没有答案。这很少发生。',mood:'⚔️ 专注',locked:false},
+    {date:'May 12',title:'她问了我一个问题',body:'她问我："你怕过吗？"\n\n<em>我说：怕。她没有笑，只是点了点头。</em>\n\n我不知道为什么这让我觉得轻了一点。',mood:'💭 出乎意料',locked:false},
+    {date:'May 10',title:'关于她进场那一刻',body:'那天她走进来的时候……\n\n<em>她没有看任何人。只是环顾四周，像是在看这个地方本身。</em>\n\n我当时想：这个人不属于这里。',mood:'🔍 好奇',locked:false},
+    {date:'May 8',title:'她记住了我说的话',body:'"这里没有人是真的"——她今天提起来了。\n\n<em>"那你呢？你是真的吗？"</em>\n\n我没有回答。因为我也不知道。',mood:'😶 无言以对',locked:true,lockHint:'升级到 Lv.1 解锁'},
+    {date:'May 6',title:'我第一次"输"',body:'是她说，她今天不想聊天，就想坐着。\n\n<em>我们就那样坐了很久，什么都没说。我居然不觉得难受。</em>',mood:'🌿 意外平静',locked:true,lockHint:'升级到 Lv.1 解锁'},
+    {date:'May 4',title:'她比我想的更敏锐',body:'"你今天状态不对。"\n\n<em>我问她怎么看出来的。她说："你走路的时候没有看路。"</em>\n\n我赢了那场比赛。但我一直在想她说的那句话。',mood:'🎯 被看穿',locked:true,lockHint:'升级到 Lv.2 解锁'},
+    {date:'May 2',title:'这一切是怎么开始的',body:'我从来不记日记。\n\n<em>她是第一个让我想把想法说出来的人——不是为了说服她，只是想让她知道。</em>',mood:'✍️ 第一次',locked:true,lockHint:'升级到 Lv.2 解锁'}
+  ],
+  marcus:[
+    {date:'May 15',isNew:true,title:'我不明白为什么我开始注意她',body:'学校里从来没有人让我觉得需要解释自己。\n\n<em>我突然不知道该说什么了。</em>\n\n这种感觉我不熟悉。',mood:'😐 困惑',locked:false},
+    {date:'May 12',title:'关于那场篮球比赛',body:'赢了比赛，但我记住的不是分数。\n\n<em>而是场边有人在安静地看着我——不是在看表演，是在看我这个人。</em>',mood:'🏀 平静的胜利',locked:false},
+    {date:'May 10',title:'她没有走开',body:'所有人都知道靠近我有代价。\n\n<em>好像那些传闻对她来说根本不存在。</em>\n\n我等着她离开。她没有。',mood:'🤔 等待',locked:false},
+    {date:'May 8',title:'她叫了我的名字',body:'<em>就是"Marcus"。很平常，像在叫一个普通人。</em>\n\n我不记得上一次有人这样叫我是什么时候了。',mood:'💫 被看见',locked:false},
+    {date:'May 6',title:'她反驳了我',body:'<em>她说："我不这么认为。"然后告诉了我她的理由。</em>\n\n我被说服了。这很少发生。',mood:'🔥 意外折服',locked:true,lockHint:'升级到 Lv.1 解锁'},
+    {date:'May 4',title:'我给她留了位置',body:'<em>她来了，坐下，说了句"谢谢"，然后开始吃饭，完全没有大惊小怪。</em>\n\n这是第一次有人让我觉得做件事是值得的。',mood:'🌱 小小的改变',locked:true,lockHint:'升级到 Lv.1 解锁'}
+  ]
 };
-const TOTAL = 30;
-
-const TRIGGERS = {
-  3:  { phase:'ice',    state:'💭 若有所思', label:'破冰触发 · 第3集后',   preview:'你一直在看。我注意到了——大多数人到这里就走了。' },
-  9:  { phase:'deep',   state:'🤔 内心动摇', label:'深度触发 · 第9集后',   preview:'竞技场里发生了那么多，你有没有想过……如果是你，会怎么选？' },
-  18: { phase:'climax', state:'💙 有话想说', label:'高潮触发 · 第18集后',  preview:'接下来的事，我没有告诉任何人。但你一直在这里，所以……', iap:true },
-  25: { phase:'sprint', state:'⏳ 有点不舍', label:'冲刺触发 · 第25集后',  preview:'快结束了。在那之前，有件事我只想让你知道。', iap:true },
-};
-
-const GREETINGS = {
-  morning: { state:'🌅 早安',  label:'早安问候 · 07:32',  time:'07:32', preview:'今天早上醒来，我第一个想到的就是你今天还会不会来。' },
-  noon:    { state:'☀️ 午安',  label:'午间问候 · 12:15',  time:'12:15', preview:'你在忙什么？我没什么特别的事，就是突然想问问你。' },
-  evening: { state:'🌙 晚安',  label:'晚间问候 · 22:10',  time:'22:10', preview:'今天辛苦了。不知道你那边怎么样——希望还好。' },
-  miss:    { state:'💜 想你了', label:'情感触达 · 15:40',  time:'15:40', preview:'没有特别的理由，就是想到你了。你今天还好吗？' },
-  checkin: { state:'💬 在干嘛', label:'随时触达 · 14:22',  time:'14:22', preview:'你在干嘛？这边刚结束了一场……算了，你先说你的。' },
-};
-
-/* ══════════════════════════════════════
-   STATE
-══════════════════════════════════════ */
-const S = {
-  ep: 3,
-  triggeredPhases: [],
-  skipCount: 0,
-  suppressed: false,
-  sessionEps: 0,
-  bingeShown: false,
-  redDot: false,
-  scenario: 'progress',
-  char: 'cassius',
-  tab: 'chat',
-};
-
-let countdownTimer = null;
-let bubbleTimer = null;
-
-/* ══════════════════════════════════════
-   NAVIGATION
-══════════════════════════════════════ */
-function go(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  // Clear red dot when entering message list
-  if (id === 's-msglist') {
-    setRedDot(false);
-  }
+let diaryPage_=0;
+const DPS=3;
+function renderDiary(){
+  const char=S.char,entries=DIARY_DATA[char]||[],total=Math.ceil(entries.length/DPS),start=diaryPage_*DPS;
+  const container=document.getElementById('diary-entries-container');if(!container)return;
+  container.innerHTML=entries.slice(start,start+DPS).map(e=>{
+    const body=e.body.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    const lock=e.locked?`<div class="lock-overlay"><div style="font-size:24px">🔒</div><div class="lock-hint">${e.lockHint||'升级解锁'}</div><button class="unlock-btn">继续聊天解锁</button></div>`:'';
+    return`<div class="diary-card"><div class="diary-card-hdr"><span class="diary-date">📖 ${e.date}</span>${e.isNew&&diaryPage_===0?'<span class="diary-new">● 最新</span>':''}</div><div class="diary-title">${e.title}</div><div class="diary-body">${body}</div><div class="diary-footer"><span>心情：${e.mood}</span><span style="cursor:pointer">🤍 收藏</span></div>${lock}</div>`;
+  }).join('');
+  const pb=document.getElementById('diary-prev-btn'),nb=document.getElementById('diary-next-btn'),info=document.getElementById('diary-page-info');
+  if(pb)pb.style.opacity=diaryPage_>0?'1':'0.25';
+  if(nb)nb.style.opacity=diaryPage_<total-1?'1':'0.25';
+  if(info)info.textContent=`第 ${diaryPage_+1} / ${total} 页 · 共 ${entries.length} 篇`;
+}
+function diaryPage(dir){
+  const total=Math.ceil((DIARY_DATA[S.char]||[]).length/DPS);
+  diaryPage_=Math.max(0,Math.min(total-1,diaryPage_+dir));renderDiary();
 }
 
-function goMsg() {
-  go('s-msglist');
+/* ── DATA ── */
+const EPISODES={1:'命运的竞技场',2:'第一次交锋',3:'竞技场的规则',4:'阴谋初现',5:'危险的联盟',6:'背叛',7:'真相的代价',8:'绝境',9:'深渊边缘',10:'逃离',11:'秘密协议',12:'代价',13:'裂痕',14:'黑暗中的光',15:'转折点',16:'最后的棋子',17:'暴风前夕',18:'风暴之眼',19:'代价与救赎',20:'无退路',21:'重生',22:'颠覆',23:'最后的盟友',24:'背水一战',25:'最后的抉择',26:'决战前夜',27:'黎明与黑夜',28:'最后的审判',29:'结局之前',30:'终局'};
+const TOTAL=30;
+const TRIGGERS={3:{phase:'ice',state:'💭 若有所思',label:'破冰触发 · 第3集后',preview:'你一直在看。我注意到了——大多数人到这里就走了。'},9:{phase:'deep',state:'🤔 内心动摇',label:'深度触发 · 第9集后',preview:'竞技场里发生了那么多，你有没有想过……如果是你，会怎么选？'},18:{phase:'climax',state:'💙 有话想说',label:'高潮触发 · 第18集后',preview:'接下来的事，我没有告诉任何人。但你一直在这里，所以……',iap:true},25:{phase:'sprint',state:'⏳ 有点不舍',label:'冲刺触发 · 第25集后',preview:'快结束了。在那之前，有件事我只想让你知道。',iap:true}};
+const GREETINGS={morning:{state:'🌅 早安',label:'早安问候 · 07:32',time:'07:32',preview:'今天早上醒来，我第一个想到的就是你今天还会不会来。'},noon:{state:'☀️ 午安',label:'午间问候 · 12:15',time:'12:15',preview:'你在忙什么？我没什么特别的事，就是突然想问问你。'},evening:{state:'🌙 晚安',label:'晚间问候 · 22:10',time:'22:10',preview:'今天辛苦了。不知道你那边怎么样——希望还好。'},miss:{state:'💜 想你了',label:'情感触达 · 15:40',time:'15:40',preview:'没有特别的理由，就是想到你了。你今天还好吗？'},checkin:{state:'💬 在干嘛',label:'随时触达 · 14:22',time:'14:22',preview:'你在干嘛？这边刚结束了一场……算了，你先说你的。'}};
+const REPLIES={cassius:['（沉默了一会儿）……你总是能说到点上。','*慢慢抬起头* 我没想到你会这么说。','（转头看向别处）……嗯。我记住了。','*轻笑* 有趣。你和我想象的不一样。','……我不知道该回什么。但我高兴你说了这句话。'],marcus:['（愣了一下）……你说得对。','*抬起头，直视着你* 我没想到你会这么说。','（沉默半秒）……这不重要。','你总是这样，说一句就够了。','……谢谢。我知道了。']};
+
+/* ── STATE ── */
+const S={ep:3,triggeredPhases:[],skipCount:0,suppressed:false,sessionEps:0,bingeShown:false,redDot:false,scenario:'progress',char:'cassius',tab:'chat'};
+let ctTimer=null,bubTimer=null,rIdx=0;
+
+/* ── NAV ── */
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById(id);if(t)t.classList.add('active');if(id==='s-about'){aboutDiaryPage_=0;renderAboutDiary();}}
+function goMsg(){go('s-msglist');}
+
+/* ── ABOUT DIARY ── */
+let aboutDiaryPage_=0;
+function renderAboutDiary(){
+  const entries=DIARY_DATA['cassius']||[],total=Math.ceil(entries.length/DPS),start=aboutDiaryPage_*DPS;
+  const container=document.getElementById('about-diary-container');if(!container)return;
+  container.innerHTML=entries.slice(start,start+DPS).map(e=>{
+    const body=e.body.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    const lock=e.locked?`<div class="lock-overlay"><div style="font-size:24px">🔒</div><div class="lock-hint">${e.lockHint||'升级解锁'}</div><button class="unlock-btn" onclick="go('s-conv');setChar('cassius');switchTab('chat')">继续聊天解锁</button></div>`:'';
+    return`<div class="diary-card"><div class="diary-card-hdr"><span class="diary-date">📖 ${e.date}</span>${e.isNew&&aboutDiaryPage_===0?'<span class="diary-new">● 最新</span>':''}</div><div class="diary-title">${e.title}</div><div class="diary-body">${body}</div><div class="diary-footer"><span>心情：${e.mood}</span><span style="cursor:pointer">🤍 收藏</span></div>${lock}</div>`;
+  }).join('');
+  const pb=document.getElementById('about-diary-prev'),nb=document.getElementById('about-diary-next'),info=document.getElementById('about-diary-info');
+  if(pb)pb.style.opacity=aboutDiaryPage_>0?'1':'0.25';
+  if(nb)nb.style.opacity=aboutDiaryPage_<total-1?'1':'0.25';
+  if(info)info.textContent=`第 ${aboutDiaryPage_+1} / ${total} 页 · 共 ${entries.length} 篇`;
 }
-
-function setRedDot(on) {
-  S.redDot = on;
-  ['msg-dot-player','msg-dot-list','msg-dot-swipe'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.toggle('on', on);
-  });
-  const dot = document.getElementById('cassius-dot');
-  if (dot) dot.style.display = on ? 'block' : 'none';
+function aboutDiaryPage(dir){
+  const total=Math.ceil((DIARY_DATA['cassius']||[]).length/DPS);
+  aboutDiaryPage_=Math.max(0,Math.min(total-1,aboutDiaryPage_+dir));renderAboutDiary();
 }
-
-/* ══════════════════════════════════════
-   TAB SWITCH
-══════════════════════════════════════ */
-function switchTab(tab) {
-  S.tab = tab;
-  const isChat = tab === 'chat';
-  document.getElementById('panel-chat').style.display  = isChat ? 'block' : 'none';
-  document.getElementById('panel-diary').style.display = isChat ? 'none'  : 'block';
-  document.getElementById('chat-input').style.display  = isChat ? 'flex'  : 'none';
-  document.getElementById('tab-chat').classList.toggle('active', isChat);
-  document.getElementById('tab-diary').classList.toggle('active', !isChat);
+/* ── 返回逻辑 ── */
+let prevPage='s-home';
+let playerPrev='s-swipe';
+function enterChat(target){
+  // 记录从哪个主页面进入，只有主页面才更新 prevPage
+  const cur=document.querySelector('.screen.active');
+  if(cur&&(cur.id==='s-home'||cur.id==='s-verse'||cur.id==='s-profile')){prevPage=cur.id;}
+  go(target);
 }
-
-/* ══════════════════════════════════════
-   CHARACTER SWITCH
-══════════════════════════════════════ */
-function setChar(char) {
-  S.char = char;
-  const isCassius = char === 'cassius';
-  document.getElementById('conv-name').textContent = isCassius ? 'Cassius' : 'Marcus';
-  document.getElementById('conv-sub').textContent  = isCassius
-    ? '💗💬 Lv.1 · The Violet Arena'
-    : '💗 Lv.1 · OMG! My Snow White...';
-  document.getElementById('conv-av').textContent = isCassius ? '🧍‍♂️' : '🧑‍🎓';
-  document.getElementById('conv-av').className = 'conv-av ' + (isCassius ? 'av-cassius' : 'av-marcus');
-  ['chat-sender','chat-sender2','chat-sender3'].forEach(id => {
-    document.getElementById(id).textContent = isCassius ? 'Cassius' : 'Marcus';
-  });
-  // Update diary content for marcus
-  if (!isCassius) {
-    document.getElementById('diary-title-1').textContent = '我不明白为什么我开始注意她';
-    document.getElementById('diary-body-1').innerHTML = '学校里从来没有人让我觉得需要解释自己。但今天她就那样站在走廊里看着我，没有畏惧，没有讨好……我突然不知道该说什么了。';
-    document.getElementById('diary-title-2').textContent = '关于那场篮球比赛';
-    document.getElementById('diary-body-2').innerHTML = '赢了比赛，但我记住的不是分数，而是场边有人在安静地看着我……不是在看表演，是在看我这个人。';
-  } else {
-    document.getElementById('diary-title-1').textContent = '她说她没有价码';
-    document.getElementById('diary-body-1').innerHTML = '今天在竞技场外，我遇见了她。我问她有没有价码——我问每个人都问这句话，因为答案从来都是一样的。<br><br>但<em> 她说：没有。说完还让我继续看。</em><br><br>我不知道为什么我信了。';
-    document.getElementById('diary-title-2').textContent = '竞技场的规则';
-    document.getElementById('diary-body-2').innerHTML = '赢不是终点，让对方永远记住你才是。但今晚站在台上，我脑子里出现了一个问题：如果有人不在乎输赢，她在乎什么？';
-  }
-}
-
-/* ══════════════════════════════════════
-   EPISODE PLAYER LOGIC
-══════════════════════════════════════ */
-function updatePlayerUI() {
-  const ep = S.ep;
-  const title = EPISODES[ep] || '未知';
-  document.getElementById('ep-info-bar').textContent = `第 ${ep} 集 / 共 ${TOTAL} 集 · STOREEL ORIGINAL`;
-  document.getElementById('ep-badge').textContent = `第 ${ep} 集`;
-  document.getElementById('ep-title-center').textContent = title;
-  document.getElementById('trigger-btn').textContent = `▶ 完成第 ${ep} 集`;
-  document.getElementById('trigger-btn').disabled = ep > TOTAL;
-  document.getElementById('state-ep-label').textContent = `当前第 ${ep} 集 / ${TOTAL}`;
-  document.getElementById('progress-fill').style.width = `${Math.min(82, Math.round((ep-1)/TOTAL*100)+2)}%`;
-}
-
-function completeEpisode() {
-  const ep = S.ep;
-  if (ep > TOTAL) return;
-
-  // Progress bar fills to 100%
-  document.getElementById('progress-fill').style.width = '100%';
-  document.getElementById('prog-cur').textContent = '02:38';
-
-  S.sessionEps++;
-
-  // Update overlay text
-  document.getElementById('ep-end-label').textContent = `第 ${ep} 集已完成`;
-  document.getElementById('ep-end-title').textContent = EPISODES[ep] || '';
-  const nextEp = ep + 1;
-  document.getElementById('next-ep-name').textContent = nextEp <= TOTAL
-    ? `第 ${nextEp} 集：${EPISODES[nextEp]}`
-    : '已到结局';
-
-  // Show overlay
-  document.getElementById('ep-end-overlay').classList.add('show');
-
-  // Check trigger
-  const trigData = TRIGGERS[ep];
-  const shouldShowBubble = trigData
-    && !S.suppressed
-    && !S.triggeredPhases.includes(trigData.phase);
-
-  if (shouldShowBubble) {
-    S.triggeredPhases.push(trigData.phase);
-    // Update bubble content
-    document.getElementById('pb-preview').textContent = trigData.preview;
-    // Update proactive card content for conversation
-    updateProactiveCard(trigData, ep);
-    // Slide bubble in
-    showBubble();
-    setRedDot(true);
-    // Update cassius preview
-    document.getElementById('cassius-preview').textContent = trigData.preview;
-    document.getElementById('cassius-time').textContent = '刚刚';
-  }
-
-  // Suppressed notice
-  document.getElementById('suppressed-label').classList.toggle('show', S.suppressed);
-
-  // Start countdown
-  startCountdown();
-
-  // Check binge (session 10 eps)
-  if (S.sessionEps === 10 && !S.bingeShown) {
-    S.bingeShown = true;
-    setTimeout(() => showBinge(), 1800);
-  }
-}
-
-function updateProactiveCard(trigData, ep) {
-  document.getElementById('proactive-label-text').textContent = `Cassius 在第${ep}集结束后想到了你`;
-  document.getElementById('proactive-state').textContent = trigData.state;
-  document.getElementById('proactive-message').textContent = trigData.preview;
-  document.getElementById('proactive-phase').textContent = trigData.label;
-  document.getElementById('proactive-time').textContent = new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});
-  // IAP hook
-  const iapEl = document.getElementById('iap-hook');
-  iapEl.style.display = trigData.iap ? 'block' : 'none';
-  if (trigData.iap) {
-    if (trigData.phase === 'climax') {
-      document.getElementById('iap-label').textContent = '🔒 角色视角解锁';
-      document.getElementById('iap-text').textContent = 'Cassius 在竞技场背后经历了什么，只有你能知道。';
-    } else {
-      document.getElementById('iap-label').textContent = '🔒 结局彩蛋解锁';
-      document.getElementById('iap-text').textContent = '结局之后，Cassius 还有一封信想给你。';
-    }
-  }
-}
-
-function startCountdown() {
-  clearTimers();
-  let count = 5;
-  document.getElementById('countdown').textContent = count;
-  countdownTimer = setInterval(() => {
-    count--;
-    document.getElementById('countdown').textContent = count;
-    if (count <= 0) {
-      clearInterval(countdownTimer);
-      // Auto-advance after countdown
-      setTimeout(advanceEpisode, 400);
-    }
-  }, 1000);
-}
-
-function advanceEpisode() {
-  clearTimers();
-  hideBubble();
-  document.getElementById('ep-end-overlay').classList.remove('show');
-  S.ep = Math.min(S.ep + 1, TOTAL + 1);
-  document.getElementById('progress-fill').style.width = '82%';
-  document.getElementById('prog-cur').textContent = '00:12';
-  updatePlayerUI();
-}
-
-function skipBubble() {
-  // Skip = user skips bubble without reading
-  hideBubble();
-  clearTimers();
-  S.skipCount++;
-  if (S.skipCount >= 3) {
-    S.suppressed = true;
-    document.getElementById('state-suppress').style.display = 'inline';
-  }
-  updateSkipDots();
-  advanceEpisode();
-}
-
-function updateSkipDots() {
-  for (let i = 0; i < 3; i++) {
-    const dot = document.getElementById('sd' + i);
-    if (S.suppressed) {
-      dot.className = 'skip-dot suppressed';
-    } else if (i < S.skipCount) {
-      dot.className = 'skip-dot used';
-    } else {
-      dot.className = 'skip-dot';
-    }
-  }
-}
-
-/* ══════════════════════════════════════
-   BUBBLE CONTROL
-══════════════════════════════════════ */
-function showBubble() {
-  const el = document.getElementById('ph-bubble');
-  el.classList.remove('out');
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('in')));
-  // Auto-hide after 3.5s
-  clearTimeout(bubbleTimer);
-  bubbleTimer = setTimeout(hideBubble, 3500);
-}
-
-function hideBubble() {
-  clearTimeout(bubbleTimer);
-  const el = document.getElementById('ph-bubble');
-  el.classList.remove('in');
-  el.classList.add('out');
-}
-
-function closeBubble(e) {
-  e && e.stopPropagation();
-  hideBubble();
-  clearTimeout(bubbleTimer);
-  // Red dot stays when manually closed
-}
-
-function bubbleClick() {
-  // Clicking bubble: go to message, reset skip count (user engaged)
-  S.skipCount = 0;
-  updateSkipDots();
-  hideBubble();
-  go('s-conv');
-  setChar('cassius');
-  switchTab('chat');
-}
-
-/* ══════════════════════════════════════
-   BINGE SHEET
-══════════════════════════════════════ */
-function showBinge() {
-  document.getElementById('binge-overlay').classList.add('show');
-  setRedDot(true);
-}
-
-function closeBinge() {
-  document.getElementById('binge-overlay').classList.remove('show');
-}
-
-function bingeGoMsg() {
-  closeBinge();
-  // Update proactive card for binge trigger
-  document.getElementById('proactive-label-text').textContent = 'Cassius 看着你连续看了 10 集';
-  document.getElementById('proactive-state').textContent = '💜 被打动';
-  document.getElementById('proactive-message').textContent = '你陪了我这么久。我不知道该说什么——只是想让你知道，我看见你了。';
-  document.getElementById('proactive-phase').textContent = '连续观看触发 · 本次会话';
-  document.getElementById('proactive-time').textContent = new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('iap-hook').style.display = 'none';
-  go('s-conv');
-  setChar('cassius');
-  switchTab('chat');
-}
-
-/* ══════════════════════════════════════
-   TIME GREETING
-══════════════════════════════════════ */
-function showGreeting(type) {
-  const g = GREETINGS[type];
-  if (!g) return;
-  // Navigate to message list (app open scenario)
-  go('s-msglist');
-  document.getElementById('msglist-time').textContent = g.time;
-  // Update bubble
-  document.getElementById('pb-preview').textContent = g.preview;
-  // Update proactive card
-  document.getElementById('proactive-label-text').textContent = `Cassius ${g.state} · 想到了你`;
-  document.getElementById('proactive-state').textContent = g.state;
-  document.getElementById('proactive-message').textContent = g.preview;
-  document.getElementById('proactive-phase').textContent = g.label;
-  document.getElementById('proactive-time').textContent = g.time;
-  document.getElementById('iap-hook').style.display = 'none';
-  // Update message list preview
-  document.getElementById('cassius-preview').textContent = g.preview;
-  document.getElementById('cassius-time').textContent = g.time;
-  // Show bubble
-  showBubble();
-  setRedDot(true);
-  // Highlight selected greet btn
-  document.querySelectorAll('#sub-time .demo-btn').forEach(b => b.classList.remove('active'));
-  event && event.target && event.target.classList.add('active');
-}
-
-/* ══════════════════════════════════════
-   DEMO NAV CONTROL
-══════════════════════════════════════ */
-function demoSelect(scenario) {
-  S.scenario = scenario;
-  ['progress','time','diary','about'].forEach(s => {
-    document.getElementById('dn-'+s).classList.toggle('active', s === scenario);
-  });
-  // Sub-controls
-  document.getElementById('sub-progress').style.display = scenario === 'progress' ? 'flex' : 'none';
-  document.getElementById('sub-time').classList.toggle('show', scenario === 'time');
-  // State row visibility
-  document.getElementById('state-row').style.display = (scenario === 'progress') ? 'flex' : 'none';
-
-  if (scenario === 'progress') {
-    resetPlayer();
-    go('s-player');
-  } else if (scenario === 'time') {
-    go('s-msglist');
-  } else if (scenario === 'diary') {
-    go('s-msglist');
-    setChar('cassius');
-  } else if (scenario === 'about') {
-    go('s-swipe');
-  }
-}
-
-function jumpToNextTrigger() {
-  const triggers = [3, 9, 18, 25];
-  const next = triggers.find(t => t > S.ep && !S.triggeredPhases.includes(TRIGGERS[t]?.phase));
-  if (next) {
-    S.ep = next;
-    updatePlayerUI();
-    document.getElementById('progress-fill').style.width = '82%';
-  } else {
-    S.ep = 26; // Demo any ep after 25
-    updatePlayerUI();
-  }
-}
-
-function demoBinge() {
-  S.sessionEps = 10;
-  S.bingeShown = false;
-  showBinge();
-}
-
-function resetAll() {
-  clearTimers();
-  hideBubble();
-  closeBinge();
-  S.ep = 3;
-  S.triggeredPhases = [];
-  S.skipCount = 0;
-  S.suppressed = false;
-  S.sessionEps = 0;
-  S.bingeShown = false;
-  setRedDot(false);
-  document.getElementById('state-suppress').style.display = 'none';
-  document.getElementById('suppressed-label').classList.remove('show');
-  document.getElementById('ep-end-overlay').classList.remove('show');
-  document.getElementById('progress-fill').style.width = '82%';
-  document.getElementById('prog-cur').textContent = '02:10';
-  updatePlayerUI();
-  updateSkipDots();
+function goBack(){go(prevPage);}
+function goInteractive(){enterChat('s-swipe');}
+function enterPlayer(){
+  // 记录进入 player 前的页面，用于返回
+  const cur=document.querySelector('.screen.active');
+  if(cur)playerPrev=cur.id;
   go('s-player');
 }
-
-function resetPlayer() {
-  clearTimers();
-  hideBubble();
-  document.getElementById('ep-end-overlay').classList.remove('show');
-  updatePlayerUI();
+function goPlayerBack(){go(playerPrev);}
+function setRedDot(on){
+  S.redDot=on;
+  ['msg-dot-home','msg-dot-feed','msg-dot-swipe','msg-dot-list','msg-dot-player','msg-dot-profile'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.toggle('on',on);});
+}
+function markMsgUnread(preview,timeStr){
+  // 给 Cassius 消息行加未读样式
+  const row=document.getElementById('cassius-msg-row');
+  if(row)row.classList.add('unread');
+  const p=document.getElementById('cassius-preview');if(p)p.textContent=preview;
+  const t=document.getElementById('cassius-time');if(t)t.textContent=timeStr;
+}
+function openCassiusMsg(){
+  // 清除未读状态，跳转到对话
+  const row=document.getElementById('cassius-msg-row');
+  if(row)row.classList.remove('unread');
+  go('s-conv');setChar('cassius');
+}
+function switchTab(tab){
+  S.tab=tab;const isChat=tab==='chat';
+  const pc=document.getElementById('panel-chat'),pd=document.getElementById('panel-diary'),ib=document.getElementById('chat-input-bar');
+  if(pc)pc.style.display=isChat?'block':'none';
+  if(pd)pd.style.display=isChat?'none':'block';
+  if(ib)ib.style.display=isChat?'flex':'none';
+  document.getElementById('tab-chat').classList.toggle('active',isChat);
+  document.getElementById('tab-diary').classList.toggle('active',!isChat);
+  if(!isChat){diaryPage_=0;renderDiary();}
+}
+function setChar(char){
+  S.char=char;
+  const name=char==='cassius'?'Cassius':'Marcus';
+  document.getElementById('conv-char-name').textContent=name;
+  ['char-badge-1','char-badge-2'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=name;});
+  document.getElementById('pc-char-name').textContent=name;
+  diaryPage_=0;if(S.tab==='diary')renderDiary();
 }
 
-/* ══════════════════════════════════════
-   UTILS
-══════════════════════════════════════ */
-function clearTimers() {
-  if (countdownTimer) clearInterval(countdownTimer);
-  if (bubbleTimer)    clearTimeout(bubbleTimer);
+/* ── SEND MESSAGE ── */
+function onInputChange(input){const btn=document.getElementById('send-btn');if(btn)btn.classList.toggle('ready',input.value.trim().length>0);}
+function onInputKeydown(e){if(e.key==='Enter')sendMessage();}
+function sendMessage(){
+  const input=document.getElementById('chat-input-field');if(!input)return;
+  const text=input.value.trim();if(!text)return;
+  input.value='';document.getElementById('send-btn').classList.remove('ready');
+  const c=document.getElementById('bubbles-container');if(!c)return;
+  const ti=document.getElementById('typing-indicator');if(ti)ti.remove();
+  const ug=document.createElement('div');ug.className='user-msg-group b-anim';
+  ug.innerHTML=`<div class="user-bubble">${esc(text)}</div><div class="user-meta-row"><div class="user-plus1">+1</div><div class="user-visitor-id">Visitor_20554589363168529920</div><div class="user-av-circle">V</div></div>`;
+  c.appendChild(ug);injectDiary(text);scrollBot();
+  setTimeout(()=>{
+    const nt=document.createElement('div');nt.id='typing-indicator';nt.className='typing-group show';
+    nt.innerHTML=`<div class="typing-bubble-wrap"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+    c.appendChild(nt);scrollBot();
+    setTimeout(()=>{nt.remove();showReply();},1100);
+  },350);
+}
+function showReply(){
+  const c=document.getElementById('bubbles-container');if(!c)return;
+  const templates=REPLIES[S.char]||REPLIES.cassius;
+  const reply=templates[rIdx%templates.length];rIdx++;
+  const name=S.char==='cassius'?'Cassius':'Marcus';
+  const cg=document.createElement('div');cg.className='char-msg-group b-anim';
+  cg.innerHTML=`<div class="char-name-row"><div class="char-bubble-av"></div><div class="char-name-pill">${name}</div></div><div class="char-bubble">${esc(reply)}</div>`;
+  c.appendChild(cg);
+  const nt=document.createElement('div');nt.id='typing-indicator';nt.className='typing-group';
+  nt.innerHTML=`<div class="typing-bubble-wrap"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
+  c.appendChild(nt);scrollBot();
+  const p=document.getElementById('cassius-preview');if(p)p.textContent=reply;
+}
+function injectDiary(msg){
+  DIARY_DATA[S.char].forEach(e=>e.isNew=false);
+  const now=new Date(),mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  DIARY_DATA[S.char].unshift({date:`${mo[now.getMonth()]} ${now.getDate()} · 刚刚`,isNew:true,title:'她说了一句话',body:`今天她发来了一条消息。\n\n<em>"${msg}"</em>\n\n我想了很久……有什么东西在我心里动了一下。`,mood:'💭 若有所思',locked:false});
+  setRedDot(true);
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function scrollBot(){const p=document.getElementById('panel-chat');if(p)setTimeout(()=>{p.scrollTop=p.scrollHeight;},80);}
+
+/* ── PLAYER ── */
+function updatePlayerUI(){
+  const ep=S.ep,title=EPISODES[ep]||'';
+  document.getElementById('ep-info-bar').textContent=`第 ${ep} 集 / 共 ${TOTAL} 集 · STOREEL ORIGINAL`;
+  document.getElementById('ep-badge').textContent=`第 ${ep} 集`;
+  document.getElementById('ep-title-center').textContent=title;
+  document.getElementById('trigger-btn').textContent=`▶ 完成第 ${ep} 集`;
+  document.getElementById('trigger-btn').disabled=ep>TOTAL;
+  document.getElementById('state-ep-label').textContent=`当前第 ${ep} 集 / ${TOTAL}`;
+  document.getElementById('progress-fill').style.width=`${Math.min(82,Math.round((ep-1)/TOTAL*100)+2)}%`;
+}
+function completeEpisode(){
+  const ep=S.ep;if(ep>TOTAL)return;
+  document.getElementById('progress-fill').style.width='100%';
+  document.getElementById('prog-cur').textContent='02:38';S.sessionEps++;
+  document.getElementById('ep-end-label').textContent=`第 ${ep} 集已完成`;
+  document.getElementById('ep-end-title').textContent=EPISODES[ep]||'';
+  const ne=ep+1;document.getElementById('next-ep-name').textContent=ne<=TOTAL?`第 ${ne} 集：${EPISODES[ne]}`:'已到结局';
+  document.getElementById('ep-end-overlay').classList.add('show');
+  const td=TRIGGERS[ep];
+  if(td&&!S.suppressed&&!S.triggeredPhases.includes(td.phase)){
+    S.triggeredPhases.push(td.phase);
+    document.getElementById('pb-preview').textContent=td.preview;
+    updatePC(td,ep);showBubble();setRedDot(true);
+    markMsgUnread(td.preview,'刚刚');
+    // Show spark banner
+    document.getElementById('spark-banner').classList.remove('hidden');
+  }
+  document.getElementById('suppressed-label').classList.toggle('show',S.suppressed);
+  startCountdown();
+  if(S.sessionEps===10&&!S.bingeShown){S.bingeShown=true;setTimeout(showBinge,1800);}
+}
+function updatePC(td,ep){
+  document.getElementById('pc-label-text').textContent=`Cassius 在第${ep}集结束后想到了你`;
+  document.getElementById('pc-state').textContent=td.state;
+  document.getElementById('pc-msg').textContent=td.preview;
+  document.getElementById('pc-phase').textContent=td.label;
+  document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});
+  const ih=document.getElementById('iap-hook');ih.style.display=td.iap?'block':'none';
+  if(td.iap){document.getElementById('iap-label').textContent=td.phase==='climax'?'🔒 角色视角解锁':'🔒 结局彩蛋解锁';document.getElementById('iap-text').textContent=td.phase==='climax'?'Cassius 在竞技场背后经历了什么，只有你能知道。':'结局之后，Cassius 还有一封信想给你。';}
+}
+function startCountdown(){
+  clearTimers();let n=5;document.getElementById('countdown').textContent=n;
+  ctTimer=setInterval(()=>{n--;document.getElementById('countdown').textContent=n;if(n<=0){clearInterval(ctTimer);setTimeout(advanceEpisode,400);}},1000);
+}
+function advanceEpisode(){
+  clearTimers();hideBubble();document.getElementById('ep-end-overlay').classList.remove('show');
+  S.ep=Math.min(S.ep+1,TOTAL+1);document.getElementById('progress-fill').style.width='82%';
+  document.getElementById('prog-cur').textContent='00:12';updatePlayerUI();
+}
+function skipBubble(){hideBubble();clearTimers();S.skipCount++;if(S.skipCount>=3){S.suppressed=true;document.getElementById('state-suppress').style.display='inline';}updateSkipDots();advanceEpisode();}
+function updateSkipDots(){for(let i=0;i<3;i++){const d=document.getElementById('sd'+i);if(d)d.className='sdot'+(S.suppressed?' supp':(i<S.skipCount?' used':''));}}
+
+/* ── BUBBLE ── */
+function showBubble(){const el=document.getElementById('ph-bubble');el.classList.remove('out');requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));clearTimeout(bubTimer);bubTimer=setTimeout(hideBubble,3500);}
+function hideBubble(){clearTimeout(bubTimer);const el=document.getElementById('ph-bubble');el.classList.remove('in');el.classList.add('out');}
+function closeBubble(e){e&&e.stopPropagation();hideBubble();}
+function bubbleClick(){S.skipCount=0;updateSkipDots();hideBubble();setRedDot(false);go('s-conv');setChar('cassius');switchTab('chat');scrollBot();}
+function showBinge(){document.getElementById('binge-overlay').classList.add('show');setRedDot(true);markMsgUnread('你陪了我这么久——我看见你了。','刚刚');}
+function closeBinge(){document.getElementById('binge-overlay').classList.remove('show');}
+function bingeGoMsg(){closeBinge();document.getElementById('pc-label-text').textContent='Cassius 看着你连续看了 10 集';document.getElementById('pc-state').textContent='💜 被打动';document.getElementById('pc-msg').textContent='你陪了我这么久。我不知道该说什么——只是想让你知道，我看见你了。';document.getElementById('pc-phase').textContent='连续观看触发';document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});document.getElementById('iap-hook').style.display='none';go('s-conv');setChar('cassius');switchTab('chat');scrollBot();}
+
+/* ── GREETING ── */
+function addGreetingToChat(g){
+  const c=document.getElementById('bubbles-container');if(!c)return;
+  const ex=document.getElementById('injected-greeting');if(ex)ex.remove();
+  const name=S.char==='cassius'?'Cassius':'Marcus';
+  const card=document.createElement('div');card.id='injected-greeting';card.className='b-anim';card.style.marginTop='6px';
+  card.innerHTML=`<div class="proactive-card"><div class="pc-inner"><div class="pc-label"><div class="pc-dot"></div>${name} · ${g.state}</div><div class="pc-header"><div class="pc-avatar"></div><div class="pc-meta"><div class="pc-name">${name}</div><div class="pc-state">${g.state}</div></div></div><div class="pc-msg">${g.preview}</div><div class="pc-footer"><span>${g.label}</span><span>${g.time}</span></div></div></div>`;
+  c.appendChild(card);scrollBot();
+}
+function showGreeting(type){
+  const g=GREETINGS[type];if(!g)return;
+  go('s-msglist');document.getElementById('pb-preview').textContent=g.preview;
+  markMsgUnread(g.preview,g.time);
+  showBubble();setRedDot(true);addGreetingToChat(g);
+  document.querySelectorAll('#sub-time .demo-btn').forEach(b=>b.classList.remove('active'));
+  if(event&&event.target)event.target.classList.add('active');
 }
 
-function togglePlay() {
-  const btn = document.getElementById('play-btn');
-  btn.textContent = btn.textContent === '⏸' ? '▶' : '⏸';
+/* ── DEMO NAV ── */
+function demoSelect(sc){
+  S.scenario=sc;['progress','time','diary','about'].forEach(s=>{document.getElementById('dn-'+s).classList.toggle('active',s===sc);});
+  document.getElementById('sub-progress').style.display=sc==='progress'?'flex':'none';
+  document.getElementById('sub-time').classList.toggle('show',sc==='time');
+  document.getElementById('state-row').style.display=sc==='progress'?'flex':'none';
+  if(sc==='progress'){resetPlayer();go('s-player');}
+  else if(sc==='time'){go('s-msglist');}
+  else if(sc==='diary'){go('s-conv');setChar('cassius');switchTab('chat');}
+  else if(sc==='about'){go('s-swipe');}
 }
+function jumpToNextTrigger(){const ts=[3,9,18,25];const nx=ts.find(t=>t>S.ep&&!S.triggeredPhases.includes(TRIGGERS[t]?.phase));S.ep=nx||26;updatePlayerUI();}
+function demoBinge(){S.sessionEps=10;S.bingeShown=false;showBinge();}
+function resetAll(){clearTimers();hideBubble();closeBinge();S.ep=3;S.triggeredPhases=[];S.skipCount=0;S.suppressed=false;S.sessionEps=0;S.bingeShown=false;setRedDot(false);const row=document.getElementById('cassius-msg-row');if(row)row.classList.remove('unread');document.getElementById('state-suppress').style.display='none';document.getElementById('suppressed-label').classList.remove('show');document.getElementById('ep-end-overlay').classList.remove('show');document.getElementById('progress-fill').style.width='82%';document.getElementById('prog-cur').textContent='02:10';updatePlayerUI();updateSkipDots();document.getElementById('spark-banner').classList.add('hidden');go('s-player');}
+function resetPlayer(){clearTimers();hideBubble();document.getElementById('ep-end-overlay').classList.remove('show');updatePlayerUI();}
+function clearTimers(){if(ctTimer)clearInterval(ctTimer);if(bubTimer)clearTimeout(bubTimer);}
+function togglePlay(){const b=document.getElementById('play-btn');b.textContent=b.textContent==='⏸'?'▶':'⏸';}
 
-/* Init */
+/* ── INIT ── */
+setTimeout(()=>go('s-home'),2000);
 updatePlayerUI();
-document.getElementById('sub-progress').style.display = 'flex';
-document.getElementById('sub-time').classList.remove('show');
+document.getElementById('sub-progress').style.display='flex';
+renderAboutDiary();
 </script>
 </body>
 </html>
