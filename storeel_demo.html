@@ -803,7 +803,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
       <div class="feed-char-name">Arthur</div>
       <div class="feed-char-meta">Age 30  188cm  Sagittarius</div>
     </div>
-    <button class="feed-chat-btn" onclick="go('s-conv');setChar('cassius')">Chat!</button>
+    <button class="feed-chat-btn" onclick="enterConv('cassius')">Chat!</button>
   </div>
   <div class="scroll">
     <div class="feed-post-img" style="position:relative;min-height:330px;flex:none;overflow:hidden">
@@ -860,7 +860,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
       </div>
     </div>
     <div class="swipe-action-row">
-      <button class="swipe-chat-btn" onclick="go('s-conv');setChar('cassius')">Chat!</button>
+      <button class="swipe-chat-btn" onclick="enterConv('cassius')">Chat!</button>
     </div>
   </div>
   <div class="swipe-nav">
@@ -889,7 +889,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
       <div class="about-char-name">Cassius</div>
       <div class="about-char-meta">Age 27  189cm  Virgo</div>
     </div>
-    <button class="about-chat-btn" onclick="go('s-conv');setChar('cassius')">Chat!</button>
+    <button class="about-chat-btn" onclick="enterConv('cassius')">Chat!</button>
   </div>
   <div class="about-tags">
     <span class="about-tag">Protective</span>
@@ -901,7 +901,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
     <!-- 日记区域 -->
     <div style="padding:0 14px 8px;display:flex;align-items:center;justify-content:space-between">
       <div class="diary-personal-tag">✨ 专属于你的视角</div>
-      <span style="font-size:11px;color:#555;cursor:pointer" onclick="go('s-conv');setChar('cassius');switchTab('diary')">查看全部 →</span>
+      <span style="font-size:11px;color:#555;cursor:pointer" onclick="enterConv('cassius');switchTab('diary')">查看全部 →</span>
     </div>
     <div id="about-diary-container" style="padding:0 14px"></div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 14px 16px">
@@ -935,7 +935,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
       </div>
       <div class="msg-unread-dot" id="cassius-unread-dot"></div>
     </div>
-    <div class="msg-row" onclick="go('s-conv');setChar('marcus')">
+    <div class="msg-row" onclick="enterConv('marcus')">
       <div class="msg-av">
         <div class="msg-av-double">
           <div class="msg-av-d1"></div>
@@ -973,7 +973,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
   <div class="conv-bg-overlay"></div>
   <div class="conv-sb"><span>4:29</span><span>📶 WiFi 50%</span></div>
   <div class="conv-header">
-    <div class="conv-char-left" onclick="go('s-msglist')">
+    <div class="conv-char-left" onclick="goConvBack()">
       <span style="font-size:22px;color:rgba(255,255,255,0.85);margin-right:2px;line-height:1">‹</span>
       <div class="conv-char-av"></div>
       <div>
@@ -1231,6 +1231,15 @@ let ctTimer=null,bubTimer=null,rIdx=0;
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById(id);if(t)t.classList.add('active');if(id==='s-about'){aboutDiaryPage_=0;renderAboutDiary();}}
 function goMsg(){go('s-msglist');}
 
+/* ── CONV ENTRY / BACK ── */
+let convPrev='s-msglist'; // 进入对话前的页面，用于返回
+function enterConv(char){
+  const cur=document.querySelector('.screen.active');
+  if(cur)convPrev=cur.id;
+  go('s-conv');setChar(char);switchTab('chat');scrollBot();
+}
+function goConvBack(){go(convPrev);}
+
 /* ── ABOUT DIARY ── */
 let aboutDiaryPage_=0;
 function renderAboutDiary(){
@@ -1238,7 +1247,7 @@ function renderAboutDiary(){
   const container=document.getElementById('about-diary-container');if(!container)return;
   container.innerHTML=entries.slice(start,start+DPS).map(e=>{
     const body=e.body.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
-    const lock=e.locked?`<div class="lock-overlay"><div style="font-size:24px">🔒</div><div class="lock-hint">${e.lockHint||'升级解锁'}</div><button class="unlock-btn" onclick="go('s-conv');setChar('cassius');switchTab('chat')">继续聊天解锁</button></div>`:'';
+    const lock=e.locked?`<div class="lock-overlay"><div style="font-size:24px">🔒</div><div class="lock-hint">${e.lockHint||'升级解锁'}</div><button class="unlock-btn" onclick="setChar('cassius');switchTab('chat')">继续聊天解锁</button></div>`:'';
     return`<div class="diary-card"><div class="diary-card-hdr"><span class="diary-date">📖 ${e.date}</span>${e.isNew&&aboutDiaryPage_===0?'<span class="diary-new">● 最新</span>':''}</div><div class="diary-title">${e.title}</div><div class="diary-body">${body}</div><div class="diary-footer"><span>心情：${e.mood}</span><span style="cursor:pointer">🤍 收藏</span></div>${lock}</div>`;
   }).join('');
   const pb=document.getElementById('about-diary-prev'),nb=document.getElementById('about-diary-next'),info=document.getElementById('about-diary-info');
@@ -1280,17 +1289,17 @@ function markMsgUnread(preview,timeStr){
   const t=document.getElementById('cassius-time');if(t)t.textContent=timeStr;
 }
 function openCassiusMsg(){
-  // 清除未读状态，跳转到对话
+  // 清除未读状态，跳转到对话，重置为 chat tab
   const row=document.getElementById('cassius-msg-row');
   if(row)row.classList.remove('unread');
-  go('s-conv');setChar('cassius');
+  enterConv('cassius');
 }
 function switchTab(tab){
   S.tab=tab;const isChat=tab==='chat';
   const pc=document.getElementById('panel-chat'),pd=document.getElementById('panel-diary'),ib=document.getElementById('chat-input-bar');
   if(pc)pc.style.display=isChat?'block':'none';
   if(pd)pd.style.display=isChat?'none':'block';
-  if(ib)ib.style.display=isChat?'flex':'none';
+  if(ib)ib.style.display=isChat?'block':'none';
   document.getElementById('tab-chat').classList.toggle('active',isChat);
   document.getElementById('tab-diary').classList.toggle('active',!isChat);
   if(!isChat){diaryPage_=0;renderDiary();}
@@ -1402,10 +1411,10 @@ function updateSkipDots(){for(let i=0;i<3;i++){const d=document.getElementById('
 function showBubble(){const el=document.getElementById('ph-bubble');el.classList.remove('out');requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('in')));clearTimeout(bubTimer);bubTimer=setTimeout(hideBubble,3500);}
 function hideBubble(){clearTimeout(bubTimer);const el=document.getElementById('ph-bubble');el.classList.remove('in');el.classList.add('out');}
 function closeBubble(e){e&&e.stopPropagation();hideBubble();}
-function bubbleClick(){S.skipCount=0;updateSkipDots();hideBubble();setRedDot(false);go('s-conv');setChar('cassius');switchTab('chat');scrollBot();}
+function bubbleClick(){S.skipCount=0;updateSkipDots();hideBubble();setRedDot(false);enterConv('cassius');}
 function showBinge(){document.getElementById('binge-overlay').classList.add('show');setRedDot(true);markMsgUnread('你陪了我这么久——我看见你了。','刚刚');}
 function closeBinge(){document.getElementById('binge-overlay').classList.remove('show');}
-function bingeGoMsg(){closeBinge();document.getElementById('pc-label-text').textContent='Cassius 看着你连续看了 10 集';document.getElementById('pc-state').textContent='💜 被打动';document.getElementById('pc-msg').textContent='你陪了我这么久。我不知道该说什么——只是想让你知道，我看见你了。';document.getElementById('pc-phase').textContent='连续观看触发';document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});document.getElementById('iap-hook').style.display='none';go('s-conv');setChar('cassius');switchTab('chat');scrollBot();}
+function bingeGoMsg(){closeBinge();document.getElementById('pc-label-text').textContent='Cassius 看着你连续看了 10 集';document.getElementById('pc-state').textContent='💜 被打动';document.getElementById('pc-msg').textContent='你陪了我这么久。我不知道该说什么——只是想让你知道，我看见你了。';document.getElementById('pc-phase').textContent='连续观看触发';document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});document.getElementById('iap-hook').style.display='none';enterConv('cassius');}
 
 /* ── GREETING ── */
 function addGreetingToChat(g){
@@ -1433,7 +1442,7 @@ function demoSelect(sc){
   document.getElementById('state-row').style.display=sc==='progress'?'flex':'none';
   if(sc==='progress'){resetPlayer();go('s-player');}
   else if(sc==='time'){go('s-msglist');}
-  else if(sc==='diary'){go('s-conv');setChar('cassius');switchTab('chat');}
+  else if(sc==='diary'){enterConv('cassius');}
   else if(sc==='about'){go('s-swipe');}
 }
 function jumpToNextTrigger(){const ts=[3,9,18,25];const nx=ts.find(t=>t>S.ep&&!S.triggeredPhases.includes(TRIGGERS[t]?.phase));S.ep=nx||26;updatePlayerUI();}
