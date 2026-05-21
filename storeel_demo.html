@@ -285,6 +285,15 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
 .conv-send-btn{width:34px;height:34px;border-radius:50%;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:14px;color:#fff;cursor:pointer;flex-shrink:0;transition:opacity 0.15s,transform 0.15s;opacity:0.4}
 .conv-send-btn.ready{opacity:1}
 .conv-send-btn:active{transform:scale(0.88)}
+/* Diary triggered tag */
+.diary-triggered-tag{display:inline-block;font-size:10px;color:#a78bfa;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.28);border-radius:6px;padding:2px 7px;margin-left:6px;font-weight:600;letter-spacing:0.4px}
+.tab-dot-diary{display:none;width:6px;height:6px;background:#a78bfa;border-radius:50%;margin-left:4px;position:relative;top:-1px;vertical-align:middle}
+.tab-dot-diary.show{display:inline-block}
+/* Quick Replies */
+.quick-replies-wrap{display:none;flex-direction:column;gap:7px;padding:0 0 10px}
+.quick-replies-wrap.show{display:flex}
+.qr-chip{background:rgba(24,14,44,0.92);border:1px solid rgba(124,58,237,0.32);border-radius:14px;padding:11px 14px;color:rgba(255,255,255,0.85);font-size:13px;line-height:1.55;cursor:pointer;text-align:left;width:100%;-webkit-tap-highlight-color:transparent;transition:background 0.12s}
+.qr-chip:active{background:rgba(124,58,237,0.22)}
 /* Diary panel */
 #panel-diary{position:relative;z-index:10;flex:1;overflow-y:auto;background:rgba(0,0,0,0.78);backdrop-filter:blur(20px);padding:14px 14px 20px}
 #panel-diary::-webkit-scrollbar{display:none}
@@ -986,7 +995,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
   <div class="spark-banner hidden" id="spark-banner">Spark level has reached Lv.1 &gt;&gt;&gt;</div>
   <div class="conv-tabs">
     <div class="conv-tab active" id="tab-chat" onclick="switchTab('chat')">Chat</div>
-    <div class="conv-tab" id="tab-diary" onclick="switchTab('diary')">📖 日记</div>
+    <div class="conv-tab" id="tab-diary" onclick="switchTab('diary')">📖 日记<span class="tab-dot-diary" id="diary-dot"></span></div>
   </div>
   <!-- Chat panel -->
   <div id="panel-chat">
@@ -1062,6 +1071,7 @@ body{background:#111;display:flex;flex-direction:column;align-items:center;min-h
   </div>
   <!-- Input bar -->
   <div class="conv-input-wrap" id="chat-input-bar">
+    <div id="quick-replies-wrap" class="quick-replies-wrap"></div>
     <div class="conv-action-row">
       <span class="conv-action-btn">⊞</span>
       <span class="conv-action-btn">→</span>
@@ -1204,7 +1214,8 @@ function renderDiary(){
   container.innerHTML=entries.slice(start,start+DPS).map(e=>{
     const body=e.body.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
     const lock=e.locked?`<div class="lock-overlay"><div style="font-size:24px">🔒</div><div class="lock-hint">${e.lockHint||'升级解锁'}</div><button class="unlock-btn">继续聊天解锁</button></div>`:'';
-    return`<div class="diary-card"><div class="diary-card-hdr"><span class="diary-date">📖 ${e.date}</span>${e.isNew&&diaryPage_===0?'<span class="diary-new">● 最新</span>':''}</div><div class="diary-title">${e.title}</div><div class="diary-body">${body}</div><div class="diary-footer"><span>心情：${e.mood}</span><span style="cursor:pointer">🤍 收藏</span></div>${lock}</div>`;
+    const triggeredTag=e.isUserTriggered?`<span class="diary-triggered-tag">✦ 因你而写</span>`:'';
+    return`<div class="diary-card"><div class="diary-card-hdr"><span class="diary-date">📖 ${e.date}</span>${e.isNew&&diaryPage_===0?'<span class="diary-new">● 最新</span>':''}${triggeredTag}</div><div class="diary-title">${e.title}</div><div class="diary-body">${body}</div><div class="diary-footer"><span>心情：${e.mood}</span><span style="cursor:pointer">🤍 收藏</span></div>${lock}</div>`;
   }).join('');
   const pb=document.getElementById('diary-prev-btn'),nb=document.getElementById('diary-next-btn'),info=document.getElementById('diary-page-info');
   if(pb)pb.style.opacity=diaryPage_>0?'1':'0.25';
@@ -1219,13 +1230,14 @@ function diaryPage(dir){
 /* ── DATA ── */
 const EPISODES={1:'命运的竞技场',2:'第一次交锋',3:'竞技场的规则',4:'阴谋初现',5:'危险的联盟',6:'背叛',7:'真相的代价',8:'绝境',9:'深渊边缘',10:'逃离',11:'秘密协议',12:'代价',13:'裂痕',14:'黑暗中的光',15:'转折点',16:'最后的棋子',17:'暴风前夕',18:'风暴之眼',19:'代价与救赎',20:'无退路',21:'重生',22:'颠覆',23:'最后的盟友',24:'背水一战',25:'最后的抉择',26:'决战前夜',27:'黎明与黑夜',28:'最后的审判',29:'结局之前',30:'终局'};
 const TOTAL=30;
-const TRIGGERS={3:{phase:'ice',state:'💭 若有所思',label:'破冰触发 · 第3集后',preview:'你一直在看。我注意到了——大多数人到这里就走了。'},9:{phase:'deep',state:'🤔 内心动摇',label:'深度触发 · 第9集后',preview:'竞技场里发生了那么多，你有没有想过……如果是你，会怎么选？'},18:{phase:'climax',state:'💙 有话想说',label:'高潮触发 · 第18集后',preview:'接下来的事，我没有告诉任何人。但你一直在这里，所以……',iap:true},25:{phase:'sprint',state:'⏳ 有点不舍',label:'冲刺触发 · 第25集后',preview:'快结束了。在那之前，有件事我只想让你知道。',iap:true}};
-const GREETINGS={morning:{state:'🌅 早安',label:'早安问候 · 07:32',time:'07:32',preview:'今天早上醒来，我第一个想到的就是你今天还会不会来。'},noon:{state:'☀️ 午安',label:'午间问候 · 12:15',time:'12:15',preview:'你在忙什么？我没什么特别的事，就是突然想问问你。'},evening:{state:'🌙 晚安',label:'晚间问候 · 22:10',time:'22:10',preview:'今天辛苦了。不知道你那边怎么样——希望还好。'},miss:{state:'💜 想你了',label:'情感触达 · 15:40',time:'15:40',preview:'没有特别的理由，就是想到你了。你今天还好吗？'},checkin:{state:'💬 在干嘛',label:'随时触达 · 14:22',time:'14:22',preview:'你在干嘛？这边刚结束了一场……算了，你先说你的。'}};
+const TRIGGERS={3:{phase:'ice',state:'💭 若有所思',label:'破冰触发 · 第3集后',preview:'你一直在看。我注意到了——大多数人到这里就走了。你为什么还在？',quickReplies:['（直接）因为你让我想继续看下去','（好奇）因为我想知道你的故事','（调皮）就是不想走，怎么了']},9:{phase:'deep',state:'🤔 内心动摇',label:'深度触发 · 第9集后',preview:'竞技场里发生了那么多，你有没有想过……如果是你，会怎么选？',quickReplies:['（坚定）我会选择保护最重要的人','（迟疑）说实话，我真的不知道……','（反问）你当时是怎么想的？']},18:{phase:'climax',state:'💙 有话想说',label:'高潮触发 · 第18集后',preview:'接下来的事，我没有告诉任何人。但你一直在这里——你想听吗？',iap:true,quickReplies:['（期待）想，你说吧，我在听','（慎重）如果你愿意说的话','（直接）当然，我一直都在这里']},25:{phase:'sprint',state:'⏳ 有点不舍',label:'冲刺触发 · 第25集后',preview:'快结束了。有件事我只想让你知道——你现在方便聊吗？',iap:true,quickReplies:['（在的）在的，你说吧','（珍惜）快结束了，有点舍不得','（好奇）什么事，你快告诉我']}};
+const BINGE_QR=['（感动）我也一直注意到你了','（轻松）陪着你看很开心','（温柔）你今天还好吗'];
+const GREETINGS={morning:{state:'🌅 早安',label:'早安问候 · 07:32',time:'07:32',preview:'今天早上醒来，我第一个想到的就是你。你昨晚睡好了吗？',quickReplies:['（轻松）睡得还不错，你呢','（困倦）没睡好，昨晚想了很多','（好奇）你怎么第一个想到我了']},noon:{state:'☀️ 午安',label:'午间问候 · 12:15',time:'12:15',preview:'你在忙什么？我这边没什么特别的事，就是突然想联系你——你那边现在怎么样？',quickReplies:['（随意）在摸鱼，没什么大事','（忙碌）有点忙，但没关系','（好奇）你那边刚结束什么了']},evening:{state:'🌙 晚安',label:'晚间问候 · 22:10',time:'22:10',preview:'今天辛苦了。你那边过得怎么样——可以说给我听吗？',quickReplies:['（平淡）还行，普通的一天','（疲惫）有点累，但总算过完了','（反问）你先说说，你今天怎么样']},miss:{state:'💜 想你了',label:'情感触达 · 15:40',time:'15:40',preview:'没有特别的理由，就是突然想到你了。最近还好吗？',quickReplies:['（温柔）我也正好在想你','（平静）挺好的，没什么特别','（有话说）还行，但最近有点想聊聊']},checkin:{state:'💬 在干嘛',label:'随时触达 · 14:22',time:'14:22',preview:'你在干嘛？这边刚结束了一场——说来话长。你先说，今天怎么样？',quickReplies:['（随口）在摸鱼，你说你的','（疲惫）刚结束一些事，累了','（好奇）你刚才做什么了，快说']}};
 const REPLIES={cassius:['（沉默了一会儿）……你总是能说到点上。','*慢慢抬起头* 我没想到你会这么说。','（转头看向别处）……嗯。我记住了。','*轻笑* 有趣。你和我想象的不一样。','……我不知道该回什么。但我高兴你说了这句话。'],marcus:['（愣了一下）……你说得对。','*抬起头，直视着你* 我没想到你会这么说。','（沉默半秒）……这不重要。','你总是这样，说一句就够了。','……谢谢。我知道了。']};
 
 /* ── STATE ── */
-const S={ep:3,triggeredPhases:[],skipCount:0,suppressed:false,sessionEps:0,bingeShown:false,redDot:false,scenario:'progress',char:'cassius',tab:'chat'};
-let ctTimer=null,bubTimer=null,rIdx=0;
+const S={ep:3,triggeredPhases:[],skipCount:0,suppressed:false,sessionEps:0,bingeShown:false,redDot:false,scenario:'progress',char:'cassius',tab:'chat',pendingQR:null};
+let ctTimer=null,bubTimer=null,rIdx=0,_qrChips=[];
 
 /* ── NAV ── */
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const t=document.getElementById(id);if(t)t.classList.add('active');if(id==='s-about'){aboutDiaryPage_=0;renderAboutDiary();}}
@@ -1237,6 +1249,7 @@ function enterConv(char){
   const cur=document.querySelector('.screen.active');
   if(cur)convPrev=cur.id;
   go('s-conv');setChar(char);switchTab('chat');scrollBot();
+  if(S.pendingQR){showQuickReplies(S.pendingQR);S.pendingQR=null;}
 }
 function goConvBack(){go(convPrev);}
 
@@ -1302,7 +1315,7 @@ function switchTab(tab){
   if(ib)ib.style.display=isChat?'block':'none';
   document.getElementById('tab-chat').classList.toggle('active',isChat);
   document.getElementById('tab-diary').classList.toggle('active',!isChat);
-  if(!isChat){diaryPage_=0;renderDiary();}
+  if(!isChat){diaryPage_=0;renderDiary();const d=document.getElementById('diary-dot');if(d)d.classList.remove('show');}
 }
 function setChar(char){
   S.char=char;
@@ -1319,6 +1332,7 @@ function onInputKeydown(e){if(e.key==='Enter')sendMessage();}
 function sendMessage(){
   const input=document.getElementById('chat-input-field');if(!input)return;
   const text=input.value.trim();if(!text)return;
+  hideQuickReplies();
   input.value='';document.getElementById('send-btn').classList.remove('ready');
   const c=document.getElementById('bubbles-container');if(!c)return;
   const ti=document.getElementById('typing-indicator');if(ti)ti.remove();
@@ -1348,11 +1362,49 @@ function showReply(){
 function injectDiary(msg){
   DIARY_DATA[S.char].forEach(e=>e.isNew=false);
   const now=new Date(),mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  DIARY_DATA[S.char].unshift({date:`${mo[now.getMonth()]} ${now.getDate()} · 刚刚`,isNew:true,title:'她说了一句话',body:`今天她发来了一条消息。\n\n<em>"${msg}"</em>\n\n我想了很久……有什么东西在我心里动了一下。`,mood:'💭 若有所思',locked:false});
+  const isQ=msg.endsWith('？')||msg.endsWith('?');
+  const isShort=msg.length<10;
+  const isLong=msg.length>30;
+  const titlesQ=['她问了我一个我没有答案的问题','她今天问了我一个问题','那个问题我到现在还在想'];
+  const titlesS=['她只说了这么几个字','话不多，但我记住了','她就说了一句话'];
+  const titlesL=['她今天说了很多，我一字没漏','她说的那些话我反复想了几遍','没想到她会说这么多'];
+  const titlesD=['没想到她会这么说','她说了一句话让我久久没有平静','今天她说的那句话'];
+  const pool=isQ?titlesQ:isShort?titlesS:isLong?titlesL:titlesD;
+  const idx=DIARY_DATA[S.char].filter(e=>e.isUserTriggered).length;
+  const title=pool[idx%pool.length];
+  const bodyQ=`她问了我一件事。\n\n<em>"${msg}"</em>\n\n我发现我没有现成的答案。这对我来说很少发生——我很少被问到让我停下来的问题。`;
+  const bodyS=`她今天只说了这么几个字。\n\n<em>"${msg}"</em>\n\n就这些。没有多余的。但我觉得比很多长篇大论更难忽视。`;
+  const bodyL=`她今天说了很多，我一个字都没有漏过。\n\n<em>"${msg}"</em>\n\n我意识到我在认真等她说完——不是在准备回答，只是在听。这对我来说不是一件容易的事。`;
+  const bodyD=`今天她发来了一条消息。\n\n<em>"${msg}"</em>\n\n我想了很久……有什么东西在我心里动了一下。`;
+  const body=isQ?bodyQ:isShort?bodyS:isLong?bodyL:bodyD;
+  const mood=isQ?'🔍 陷入思考':isShort?'💬 话不多，但够了':isLong?'📝 认真听了每一句':'💭 若有所思';
+  DIARY_DATA[S.char].unshift({date:`${mo[now.getMonth()]} ${now.getDate()} · 刚刚`,isNew:true,isUserTriggered:true,title,body,mood,locked:false});
   setRedDot(true);
+  const d=document.getElementById('diary-dot');if(d)d.classList.add('show');
 }
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function scrollBot(){const p=document.getElementById('panel-chat');if(p)setTimeout(()=>{p.scrollTop=p.scrollHeight;},80);}
+
+/* ── QUICK REPLIES ── */
+function showQuickReplies(chips){
+  const w=document.getElementById('quick-replies-wrap');
+  if(!w||!chips||!chips.length)return;
+  _qrChips=chips;
+  w.innerHTML=chips.map((c,i)=>`<button class="qr-chip" onclick="sendQuickReply(${i})">${esc(c)}</button>`).join('');
+  w.classList.add('show');
+}
+function hideQuickReplies(){
+  const w=document.getElementById('quick-replies-wrap');
+  if(w){w.classList.remove('show');w.innerHTML='';}
+  _qrChips=[];
+}
+function sendQuickReply(idx){
+  const text=_qrChips[idx];if(!text)return;
+  hideQuickReplies();
+  const input=document.getElementById('chat-input-field');
+  if(input)input.value=text;
+  sendMessage();
+}
 
 /* ── PLAYER ── */
 function updatePlayerUI(){
@@ -1394,6 +1446,7 @@ function updatePC(td,ep){
   document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});
   const ih=document.getElementById('iap-hook');ih.style.display=td.iap?'block':'none';
   if(td.iap){document.getElementById('iap-label').textContent=td.phase==='climax'?'🔒 角色视角解锁':'🔒 结局彩蛋解锁';document.getElementById('iap-text').textContent=td.phase==='climax'?'Cassius 在竞技场背后经历了什么，只有你能知道。':'结局之后，Cassius 还有一封信想给你。';}
+  S.pendingQR=td.quickReplies||null;
 }
 function startCountdown(){
   clearTimers();let n=5;document.getElementById('countdown').textContent=n;
@@ -1414,7 +1467,7 @@ function closeBubble(e){e&&e.stopPropagation();hideBubble();}
 function bubbleClick(){S.skipCount=0;updateSkipDots();hideBubble();setRedDot(false);enterConv('cassius');}
 function showBinge(){document.getElementById('binge-overlay').classList.add('show');setRedDot(true);markMsgUnread('你陪了我这么久——我看见你了。','刚刚');}
 function closeBinge(){document.getElementById('binge-overlay').classList.remove('show');}
-function bingeGoMsg(){closeBinge();document.getElementById('pc-label-text').textContent='Cassius 看着你连续看了 10 集';document.getElementById('pc-state').textContent='💜 被打动';document.getElementById('pc-msg').textContent='你陪了我这么久。我不知道该说什么——只是想让你知道，我看见你了。';document.getElementById('pc-phase').textContent='连续观看触发';document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});document.getElementById('iap-hook').style.display='none';enterConv('cassius');}
+function bingeGoMsg(){closeBinge();document.getElementById('pc-label-text').textContent='Cassius 看着你连续看了 10 集';document.getElementById('pc-state').textContent='💜 被打动';document.getElementById('pc-msg').textContent='你陪了我这么久，我一直都知道。我想问你——你今天还好吗？';document.getElementById('pc-phase').textContent='连续观看触发';document.getElementById('pc-time').textContent=new Date().toLocaleTimeString('zh',{hour:'2-digit',minute:'2-digit'});document.getElementById('iap-hook').style.display='none';S.pendingQR=BINGE_QR;enterConv('cassius');}
 
 /* ── GREETING ── */
 function addGreetingToChat(g){
@@ -1424,6 +1477,7 @@ function addGreetingToChat(g){
   const card=document.createElement('div');card.id='injected-greeting';card.className='b-anim';card.style.marginTop='6px';
   card.innerHTML=`<div class="proactive-card"><div class="pc-inner"><div class="pc-label"><div class="pc-dot"></div>${name} · ${g.state}</div><div class="pc-header"><div class="pc-avatar"></div><div class="pc-meta"><div class="pc-name">${name}</div><div class="pc-state">${g.state}</div></div></div><div class="pc-msg">${g.preview}</div><div class="pc-footer"><span>${g.label}</span><span>${g.time}</span></div></div></div>`;
   c.appendChild(card);scrollBot();
+  S.pendingQR=g.quickReplies||null;
 }
 function showGreeting(type){
   const g=GREETINGS[type];if(!g)return;
@@ -1447,7 +1501,7 @@ function demoSelect(sc){
 }
 function jumpToNextTrigger(){const ts=[3,9,18,25];const nx=ts.find(t=>t>S.ep&&!S.triggeredPhases.includes(TRIGGERS[t]?.phase));S.ep=nx||26;updatePlayerUI();}
 function demoBinge(){S.sessionEps=10;S.bingeShown=false;showBinge();}
-function resetAll(){clearTimers();hideBubble();closeBinge();S.ep=3;S.triggeredPhases=[];S.skipCount=0;S.suppressed=false;S.sessionEps=0;S.bingeShown=false;setRedDot(false);const row=document.getElementById('cassius-msg-row');if(row)row.classList.remove('unread');document.getElementById('state-suppress').style.display='none';document.getElementById('suppressed-label').classList.remove('show');document.getElementById('ep-end-overlay').classList.remove('show');document.getElementById('progress-fill').style.width='82%';document.getElementById('prog-cur').textContent='02:10';updatePlayerUI();updateSkipDots();document.getElementById('spark-banner').classList.add('hidden');go('s-player');}
+function resetAll(){clearTimers();hideBubble();closeBinge();hideQuickReplies();S.pendingQR=null;S.ep=3;S.triggeredPhases=[];S.skipCount=0;S.suppressed=false;S.sessionEps=0;S.bingeShown=false;setRedDot(false);const row=document.getElementById('cassius-msg-row');if(row)row.classList.remove('unread');document.getElementById('state-suppress').style.display='none';document.getElementById('suppressed-label').classList.remove('show');document.getElementById('ep-end-overlay').classList.remove('show');document.getElementById('progress-fill').style.width='82%';document.getElementById('prog-cur').textContent='02:10';updatePlayerUI();updateSkipDots();document.getElementById('spark-banner').classList.add('hidden');go('s-player');}
 function resetPlayer(){clearTimers();hideBubble();document.getElementById('ep-end-overlay').classList.remove('show');updatePlayerUI();}
 function clearTimers(){if(ctTimer)clearInterval(ctTimer);if(bubTimer)clearTimeout(bubTimer);}
 function togglePlay(){const b=document.getElementById('play-btn');b.textContent=b.textContent==='⏸'?'▶':'⏸';}
